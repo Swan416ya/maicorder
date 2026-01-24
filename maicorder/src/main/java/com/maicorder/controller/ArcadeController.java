@@ -1,7 +1,7 @@
 package com.maicorder.controller;
 
 import com.maicorder.entity.Arcade;
-import com.maicorder.repository.ArcadeRepository;
+import com.maicorder.mapper.ArcadeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,17 +13,16 @@ import java.util.List;
 public class ArcadeController {
 
     @Autowired
-    private ArcadeRepository arcadeRepository;
+    private ArcadeMapper arcadeMapper; // 名字变了
 
-    // 获取所有机厅 (前端下拉框要用)
     @GetMapping
     public List<Arcade> list() {
-        return arcadeRepository.findAll();
+        return arcadeMapper.selectList(null); // selectList(null) 表示查所有
     }
 
-    // 添加新机厅 (比如：上海机皇, 广州大玩家)
     @PostMapping
     public Arcade create(@RequestBody Arcade arcade) {
-        return arcadeRepository.save(arcade);
+        arcadeMapper.insert(arcade);
+        return arcade;
     }
 }

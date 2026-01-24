@@ -1,21 +1,21 @@
 package com.maicorder.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 
-@Entity
+@TableName("restaurant")
 public class Restaurant {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
-
     private String name;
-    private String description; // 比如 "这家店牛肉饭好吃"
+    private String description;
 
-    // 关键点：关联到机厅
-    @ManyToOne
-    @JoinColumn(name = "arcade_id")
-    private Arcade arcade;
+    // MP 不搞对象关联，直接存 ID 比较省心
+    // 之前是 private Arcade arcade; 现在改成：
+    private Long arcadeId;
+
+    // Getter & Setter...
 
     public Long getId() {
         return id;
@@ -41,11 +41,11 @@ public class Restaurant {
         this.description = description;
     }
 
-    public Arcade getArcade() {
-        return arcade;
+    public Long getArcadeId() {
+        return arcadeId;
     }
 
-    public void setArcade(Arcade arcade) {
-        this.arcade = arcade;
+    public void setArcadeId(Long arcadeId) {
+        this.arcadeId = arcadeId;
     }
 }

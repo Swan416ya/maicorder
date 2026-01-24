@@ -1,51 +1,37 @@
 package com.maicorder.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 
-@Entity
+@TableName("play_record")
 public class PlayRecord {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    // 必须知道这条战绩属于哪次出勤
-    @ManyToOne
-    @JoinColumn(name = "check_in_id")
-    private CheckIn checkIn;
+    // 关键修改：现在关联的是 GameSession (爸爸)，而不是 CheckIn (爷爷)
+    // 对应数据库里的 game_session_id
+    private Long gameSessionId;
 
-    // 游戏类型 (Maimai? SDVX?)
-    @Enumerated(EnumType.STRING)
-    private GameType game;
-
-    // --- 通用成绩字段 ---
-
-    // Rating / Volforce / 段位
-    // 存 String 是为了兼容 "16000" (Maimai) 和 "八段" (IIDX)
-    private String ratingResult;
-
-    // 具体的 Rating 变化值，比如 +15
-    private Integer ratingChange;
-
-    // --- 扩展字段 (为了你的进阶需求) ---
-
-    // 歌曲名 (未来这里可以换成 song_id 关联 Song 表)
+    // 歌曲名
     private String songName;
 
-    // 难度 (Master, Another, Maximum)
+    // 难度 (Master, Expert, Another 等)
     private String difficulty;
 
-    // 达成率 / 分数 (100.5000%, AAA)
+    // 分数 / 达成率 (101.00%, AAA, 2980 等)
     private String score;
 
-    // 牌子/灯 (AP, FC, HARD CLEAR)
+    // 牌子 / 灯 (FC, AP, AJ, HARD 等)
     private String clearStatus;
 
-    // 这是一个特殊的技巧：如果以后你要存特别复杂的东西，
-    // 比如 SDVX 的很多小项数据，可以预留一个大的文本字段存 JSON
-    // 目前新手阶段先不折腾 MySQL JSON 类型，用 String 顶一下
-    @Column(columnDefinition = "TEXT")
+    // 预留的扩展字段 (如果你以后要存 JSON)
     private String extraDataJson;
+
+    // ==========================================
+    // 下面是 Getter 和 Setter 方法
+    // ==========================================
 
     public Long getId() {
         return id;
@@ -55,36 +41,12 @@ public class PlayRecord {
         this.id = id;
     }
 
-    public CheckIn getCheckIn() {
-        return checkIn;
+    public Long getGameSessionId() {
+        return gameSessionId;
     }
 
-    public void setCheckIn(CheckIn checkIn) {
-        this.checkIn = checkIn;
-    }
-
-    public GameType getGame() {
-        return game;
-    }
-
-    public void setGame(GameType game) {
-        this.game = game;
-    }
-
-    public String getRatingResult() {
-        return ratingResult;
-    }
-
-    public void setRatingResult(String ratingResult) {
-        this.ratingResult = ratingResult;
-    }
-
-    public Integer getRatingChange() {
-        return ratingChange;
-    }
-
-    public void setRatingChange(Integer ratingChange) {
-        this.ratingChange = ratingChange;
+    public void setGameSessionId(Long gameSessionId) {
+        this.gameSessionId = gameSessionId;
     }
 
     public String getSongName() {

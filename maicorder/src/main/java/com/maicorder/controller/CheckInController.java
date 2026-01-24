@@ -1,13 +1,17 @@
 package com.maicorder.controller;
 
 import com.maicorder.entity.CheckIn;
+import com.maicorder.entity.GameSession;
 import com.maicorder.entity.PlayRecord;
-import com.maicorder.repository.CheckInRepository;
+import com.maicorder.mapper.CheckInMapper;
+import com.maicorder.mapper.GameSessionMapper;
+import com.maicorder.mapper.PlayRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate; // 注意是 LocalDate
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/checkins")
@@ -15,33 +19,88 @@ import java.util.List;
 public class CheckInController {
 
     @Autowired
-    private CheckInRepository checkInRepository;
+    private CheckInMapper checkInMapper;
 
-    @GetMapping
-    public List<CheckIn> getAll() {
-        // 获取列表时，Spring 会自动把关联的 playRecords 也查出来
-        return checkInRepository.findAll();
-    }
+    @Autowired
+    private GameSessionMapper gameSessionMapper;
+
+    @Autowired
+    private PlayRecordMapper playRecordMapper;
 
     @PostMapping
-    public CheckIn create(@RequestBody CheckIn checkIn) {
-        // 1. 自动填写入库时间
-        checkIn.setCheckInTime(LocalDateTime.now());
+    public CheckIn create(@RequestBody Map<String, Object> payload) {
+        // 1. 基础信息
+        Map<String, Object> arcadeObj = (Map<String, Object>) payload.get("arcade");
+        Long arcadeId = Long.valueOf(arcadeObj.get("id").toString());
 
-        // 2. 建立双向关联 (这是新手最容易坑的地方！)
-        // 前端传来的数据结构是：CheckIn -> 包含 List<PlayRecord>
-        // 但是 PlayRecord 对象里面的 "checkIn" 字段是空的。
-        // 如果不手动设置，保存到数据库后，PlayRecord 表里的 check_in_id 就是 null。
-        List<PlayRecord> records = checkIn.getPlayRecords();
-        if (records != null) {
-            for (PlayRecord record : records) {
-                record.setCheckIn(checkIn); // 告诉儿子，你的爸爸是这个 CheckIn
-            }
+        CheckIn checkIn = new CheckIn();
+        checkIn.setArcadeId(arcadeId);
+        checkIn.setComment((String) payload.get("comment"));
+
+        // --- 费用处理 ---
+        checkIn.setCoinCost(safeGetDouble(payload.get("coinCost")));
+        checkIn.setFoodCost(safeGetDouble(payload.get("foodCost")));
+        checkIn.setWaterCost(safeGetDouble(payload.get("waterCost")));
+        checkIn.setTransportCost(safeGetDouble(payload.get("transportCost")));
+
+        // --- 日期处理 (新逻辑) ---
+        String dateStr = (String) payload.get("checkInDate");
+        if (dateStr != null && !dateStr.trim().isEmpty()) {
+            // 前端传了日期，就用前端的 (格式 YYYY-MM-DD，LocalDate可以直接解析)
+            checkIn.setCheckInTime(LocalDate.parse(dateStr));
+        } else {
+            // 没传就默认今天
+            checkIn.setCheckInTime(LocalDate.now());
         }
 
-        // 3. 保存
-        // 因为我们在 Entity 里设置了 cascade = CascadeType.ALL
-        // 所以只要保存 checkIn，里面的 playRecords 也会自动保存
-        return checkInRepository.save(checkIn);
+        // 保存爷爷
+        checkInMapper.insert(checkIn);
+
+        // 2. 遍历保存爸爸 (GameSessions)
+        List<Map<String, Object>> sessions = (List<Map<String, Object>>) payload.get("gameSessions");
+        if (sessions != null) {
+            for (Map<String, Object> sessMap : sessions) {
+                GameSession session = new GameSession();
+                session.setCheckInId(checkIn.getId());
+                session.setGameName((String) sessMap.get("gameName"));
+
+                if (sessMap.get("pcCount") != null) {
+                    session.setPcCount(Integer.valueOf(sessMap.get("pcCount").toString()));
+                }
+
+                if (sessMap.get("currentRating") != null) {
+                    session.setCurrentRating(sessMap.get("currentRating").toString());
+                }
+
+                gameSessionMapper.insert(session);
+
+                // 3. 遍历保存孙子 (PlayRecords)
+                List<Map<String, Object>> records = (List<Map<String, Object>>) sessMap.get("records");
+                if (records != null) {
+                    for (Map<String, Object> recMap : records) {
+                        PlayRecord rec = new PlayRecord();
+                        rec.setGameSessionId(session.getId());
+                        rec.setSongName((String) recMap.get("songName"));
+                        rec.setScore((String) recMap.get("score"));
+                        rec.setClearStatus((String) recMap.get("clearStatus"));
+
+                        playRecordMapper.insert(rec);
+                    }
+                }
+            }
+        }
+        return checkIn;
+    }
+
+    // 辅助方法：安全转Double
+    private Double safeGetDouble(Object value) {
+        if (value == null || value.toString().trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.valueOf(value.toString());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 }
