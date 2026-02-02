@@ -1,18 +1,22 @@
-import { fileURLToPath, URL } from 'node:url'
-
+// vite.config.js  (放在 maicorder-web/ 根目录)
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
+import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
-    vueDevTools(),
+    vue()   // 这行必须有，且是第一个
   ],
+
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    },
+      '@': path.resolve(__dirname, './src')
+    }
   },
+
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    sourcemap: false
+  }
 })
