@@ -13,9 +13,33 @@ public class Arcade {
     private String address;
     private Double latitude;
     private Double longitude;
+    private String province;
+    private String city;
+    private String district;
 
-    // ... 下面是 Getter 和 Setter (你自己生成的那些，不用动) ...
-    // 为了节省篇幅，我这里不写 Getter/Setter 了，你保留你原本生成的代码即可
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
 
     public Long getId() {
         return id;

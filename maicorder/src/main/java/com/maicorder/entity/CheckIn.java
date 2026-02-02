@@ -24,6 +24,16 @@ public class CheckIn {
     // 修改这里：类型变了
     private LocalDate checkInTime;
 
+    private Long userId;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public Long getId() {
         return id;
     }
