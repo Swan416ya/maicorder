@@ -1,270 +1,325 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-
-// 接口基础路径：统一用相对路径（配合Vite代理解决跨域）
-const API_BASE = '/api'
-
-// 初始化axios请求头（携带登录后的token）
-const token = localStorage.getItem('token')
-if (token) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-}
-axios.defaults.headers.common['Content-Type'] = 'application/json'
-
-// 接收父组件传来的当前用户 + 从localStorage兜底（双重保障，避免空值）
-const props = defineProps(['currentUser'])
-const currentUser = ref(
-  props.currentUser || JSON.parse(localStorage.getItem('currentUser')) || {}
-)
-
-// 定义退出事件
-const emit = defineEmits(['logout'])
-
-// 游戏配置
-const GAME_CONFIG = {
-  'MAIMAI_DX': { label: '舞萌 DX', lamps: ['鸟', '鸟+', 'FC', 'AP', 'FDX'] },
-  'CHUNITHM': { label: '中二节奏', lamps: ['AJ', 'AJC', 'FC'] },
-  'ONGREKI': { label: '音击', lamps: ['AB', 'FB'] },
-  'IIDX': { label: 'IIDX', lamps: ['Hard', 'ExHard'] }
-}
-
-// 获取今日日期字符串
-const getTodayString = () => {
-  const date = new Date()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-// 响应式数据
-const arcades = ref([])
-const newArcadeName = ref('')
-const form = ref({
-  arcadeId: null,
-  checkInDate: getTodayString(),
-  coinCost: '', 
-  foodCost: '', 
-  waterCost: '', 
-  transportCost: '',
-  comment: '',
-  gameSessions: [] 
-})
-
-// 获取机厅列表（修复：适配后端Result统一返回结构）
-const fetchArcades = async () => {
-  try {
-    const res = await axios.get(`${API_BASE}/arcades`)
-    // 核心修复：从Result对象的data字段取机厅数组，兜底空数组
-    const resultData = res.data?.data || []
-    arcades.value = resultData.filter(a => a.name)
-  } catch (e) { 
-    console.error('获取机厅列表失败：', e)
-    alert('获取机厅列表失败，请检查登录状态或网络')
-  }
-}
-
-// 创建新机厅
-const createArcade = async () => {
-  if(!newArcadeName.value.trim()) return alert('请输入机厅名称！')
-  try {
-    await axios.post(`${API_BASE}/arcades`, {name: newArcadeName.value.trim()})
-    newArcadeName.value = ''
-    fetchArcades() // 重新拉取列表
-    alert('机厅创建成功！')
-  } catch(e) { 
-    console.error('创建机厅失败：', e)
-    alert('创建失败：' + (e.response?.data?.message || e.message))
-  }
-}
-
-// 游戏场次相关方法
-const addSession = (gameKey) => form.value.gameSessions.push({ gameName: gameKey, pcCount: '', currentRating: '', records: [] })
-const addRecordToSession = (idx) => form.value.gameSessions[idx].records.push({ songName: '', score: '', clearStatus: '' })
-const removeSession = (idx) => form.value.gameSessions.splice(idx, 1)
-const removeRecord = (sIdx, rIdx) => form.value.gameSessions[sIdx].records.splice(rIdx, 1)
-
-// 提交出勤记录（增加userId空值保护）
-const submitCheckIn = async () => {
-  // 基础验证
-  if (!form.value.arcadeId) return alert("请选择机厅！")
-  if (form.value.gameSessions.length === 0) return alert("请添加至少一个游戏场次！")
-  
-  try {
-    const payload = {
-      // 空值保护：避免currentUser.id不存在时报错
-      userId: currentUser.value.id || '',
-      arcade: { id: form.value.arcadeId },
-      checkInDate: form.value.checkInDate,
-      coinCost: form.value.coinCost || 0, 
-      foodCost: form.value.foodCost || 0,
-      waterCost: form.value.waterCost || 0, 
-      transportCost: form.value.transportCost || 0,
-      comment: form.value.comment,
-      gameSessions: form.value.gameSessions.map(sess => ({
-        ...sess,
-        pcCount: sess.pcCount || 0,
-        records: sess.records.filter(rec => rec.songName.trim()) // 过滤空的战绩
-      }))
-    }
-    await axios.post(`${API_BASE}/checkins`, payload)
-    alert("出勤记录保存成功！")
-    // 重置表单
-    form.value = {
-      arcadeId: null,
-      checkInDate: getTodayString(),
-      coinCost: '', 
-      foodCost: '', 
-      waterCost: '', 
-      transportCost: '',
-      comment: '',
-      gameSessions: [] 
-    }
-  } catch (e) {
-    console.error('保存出勤记录失败：', e)
-    alert("保存失败：" + (e.response?.data?.message || e.message))
-  }
-}
-
-// 完善退出登录逻辑（清空本地存储+触发事件+跳转）
-const handleLogout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('currentUser')
-  emit('logout')
-  window.location.href = '/login'
-}
-
-// 页面挂载时加载机厅列表
-onMounted(() => {
-  fetchArcades()
-})
-</script>
-
+<!-- MainLayout.vue -->
 <template>
-  <div class="main-app-container">
-    <div class="main-app-content">
-      
-      <!-- 顶部栏：空值保护 + 修复退出登录按钮 -->
-      <div class="top-bar">
-        <div class="user-info">
-          <!-- 可选链+默认值，避免undefined报错 -->
-          <div class="avatar-placeholder">{{ currentUser?.username?.[0]?.toUpperCase() || 'U' }}</div>
-          <span>{{ currentUser?.username || '未知用户' }}</span>
-        </div>
-        <button @click="handleLogout" class="mini-btn">LOGOUT</button>
-      </div>
-
-      <h1 class="page-title">RECORD YOUR PLAY</h1>
-
-      <!-- 基础信息 -->
-      <div class="card">
-        <h3>📍 基础信息</h3>
-        <div class="row">
-          <div class="col">
-            <label>机厅</label>
-            <div class="row" style="margin-bottom:0">
-              <select v-model="form.arcadeId">
-                <option :value="null">请选择机厅...</option>
-                <option v-for="a in arcades" :value="a.id" :key="a.id">{{ a.name }}</option>
-              </select>
-            </div>
-            <div class="row" style="margin-top:5px">
-              <input v-model="newArcadeName" placeholder="新建机厅..." style="font-size:0.8rem; padding:4px"/>
-              <button @click="createArcade" style="font-size:0.8rem; padding:4px 8px">加</button>
-            </div>
-          </div>
-          <div class="col">
-            <label>日期</label>
-            <input type="date" v-model="form.checkInDate" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 费用 -->
-      <div class="card">
-        <h3>💰 今日开销</h3>
-        <div class="cost-grid">
-          <div class="cost-item"><label>🪙 投币</label><input type="number" v-model="form.coinCost" placeholder="0" /></div>
-          <div class="cost-item"><label>🍜 吃饭</label><input type="number" v-model="form.foodCost" placeholder="0" /></div>
-          <div class="cost-item"><label>🥤 喝水</label><input type="number" v-model="form.waterCost" placeholder="0" /></div>
-          <div class="cost-item"><label>🚕 路费</label><input type="number" v-model="form.transportCost" placeholder="0" /></div>
-        </div>
-        <div class="row" style="margin-top: 10px;">
-          <input v-model="form.comment" placeholder="今日总备注..." style="width: 100%"/>
-        </div>
-      </div>
-
-      <!-- 游戏场次 -->
-      <div class="card">
-        <h3>🎮 玩了啥？</h3>
-        <div class="game-buttons">
-          <button v-for="(conf, key) in GAME_CONFIG" :key="key" @click="addSession(key)" class="game-btn">+ {{ conf.label }}</button>
-        </div>
-
-        <div v-for="(sess, sIndex) in form.gameSessions" :key="sIndex" class="session-box">
-          <div class="session-header">
-            <h4>{{ GAME_CONFIG[sess.gameName].label }}</h4>
-            <button @click="removeSession(sIndex)" class="del-btn">删除</button>
-          </div>
-          <div class="row">
-            <input type="number" v-model="sess.pcCount" placeholder="PC数" />
-            <input v-model="sess.currentRating" placeholder="今日Rating/段位" />
-          </div>
-          <div class="records-area">
-            <div v-for="(rec, rIndex) in sess.records" :key="rIndex" class="record-row">
-              <input v-model="rec.songName" placeholder="曲名" style="flex:2"/>
-              <input v-model="rec.score" placeholder="分数/达成率" />
-              <select v-model="rec.clearStatus">
-                <option value="">牌子</option>
-                <option v-for="l in GAME_CONFIG[sess.gameName].lamps" :key="l" :value="l">{{l}}</option>
-              </select>
-              <button @click="removeRecord(sIndex, rIndex)" class="del-btn small">×</button>
-            </div>
-            <button @click="addRecordToSession(sIndex)" class="add-sub-btn">+ 添加战绩</button>
-          </div>
-        </div>
-      </div>
-
-      <button @click="submitCheckIn" class="submit-btn">✅ SUBMIT RECORD</button>
+  <div class="main-page-container">
+    <!-- 顶部标题 -->
+    <div class="page-title">
+      <div class="title-line">{{ userName }}</div>
+      <div class="title-line">今天勤了</div>
     </div>
+
+    <!-- 核心区域：圆形按钮/弹窗容器 -->
+    <div class="core-content">
+      <div 
+        class="check-btn-container"
+        :class="{ 'dialog-expanded': isDialogOpen }"
+        @click="handleCheckIn"
+        @click.stop="preventMaskClose"
+      >
+        <!-- 动态内接长方形容器（勾股定理计算尺寸 + 四周渐变羽化 + 上下留白） -->
+        <div 
+          class="dialog-content-wrapper"
+          v-if="isDialogOpen"
+          :style="{ 
+            width: contentWidth + 'px', 
+            height: contentHeight + 'px',
+            borderRadius: '16px'
+          }"
+        >
+          <CheckInDialog 
+            @close="closeDialog"
+          />
+        </div>
+
+        <span class="btn-text" v-if="!isDialogOpen">勤了</span>
+      </div>
+
+      <div class="view-records-link" @click="handleViewRecords" v-if="!isDialogOpen">
+        我的记录
+      </div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <div 
+      class="dialog-mask"
+      v-if="isDialogOpen"
+      @click="closeDialog"
+    >
+      <p class="mask-tip">点击空白处返回</p>
+    </div>
+
+    <!-- 右下角登出按钮 -->
+    <button class="logout-btn" @click="handleLogout">登出</button>
   </div>
 </template>
 
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import CheckInDialog from './CheckInDialog.vue'
+
+const router = useRouter()
+
+// 基础变量
+const userName = ref('未知用户')
+
+// 动效相关变量
+const isDialogOpen = ref(false)
+const dialogSize = ref(200)
+const maxDialogSize = ref(0)
+// 动态内接长方形尺寸（勾股定理计算）
+const contentWidth = ref(0)
+const contentHeight = ref(0)
+
+// 页面挂载时初始化
+onMounted(() => {
+  initUserInfo()
+  calculateMaxDialogSize()
+  window.addEventListener('resize', handleWindowResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleWindowResize)
+})
+
+// 初始化用户名
+const initUserInfo = () => {
+  try {
+    const userStr = localStorage.getItem('currentUser')
+    if (userStr) {
+      const userInfo = JSON.parse(userStr)
+      userName.value = userInfo.username || userInfo.name || '未知用户'
+    }
+  } catch (error) {
+    console.error('获取用户信息失败：', error)
+  }
+}
+
+// 计算弹窗最大尺寸 + 动态内接长方形尺寸（核心逻辑：改为90%基数）
+const calculateMaxDialogSize = () => {
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
+  const longSide = Math.max(windowWidth, windowHeight)
+  maxDialogSize.value = Math.floor(longSide * 0.75)
+  if (dialogSize.value > maxDialogSize.value) {
+    dialogSize.value = maxDialogSize.value
+  }
+
+  // ########## 修改：基数改为圆直径的90% ##########
+  const diameter = dialogSize.value * 0.9 // 对角线 = 圆直径 × 90%
+  const screenRatioBase = 0.9 // 宽/高也取90%，符合需求
+
+  if (windowWidth > windowHeight) {
+    // 横屏：高 = 屏幕高度 × 90%，宽 = √(对角线² - 高²)
+    contentHeight.value = Math.floor(windowHeight * screenRatioBase)
+    contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
+  } else {
+    // 竖屏：宽 = 屏幕宽度 × 90%，高 = √(对角线² - 宽²)
+    contentWidth.value = Math.floor(windowWidth * screenRatioBase)
+    contentHeight.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentWidth.value, 2)))
+  }
+
+  // ########## 新增：上下留白处理（额外减少高度，预留留白空间） ##########
+  contentHeight.value = Math.floor(contentHeight.value * 0.9)
+}
+
+// 窗口大小变化时重新计算
+const handleWindowResize = () => {
+  calculateMaxDialogSize()
+}
+
+// 打开弹窗
+const openDialog = () => {
+  isDialogOpen.value = true
+  setTimeout(() => {
+    dialogSize.value = maxDialogSize.value
+  }, 10)
+}
+
+// 关闭弹窗
+const closeDialog = () => {
+  isDialogOpen.value = false
+  dialogSize.value = 200
+}
+
+// 点击「勤了」按钮
+const handleCheckIn = () => {
+  if (!isDialogOpen.value) {
+    openDialog()
+  }
+}
+
+// 防止事件冒泡
+const preventMaskClose = () => {}
+
+// 查看我的记录
+const handleViewRecords = () => {
+  router.push('/records')
+}
+
+// 登出逻辑
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('currentUser')
+  alert('已退出登录')
+  router.push('/')
+}
+</script>
+
 <style scoped>
-/* 业务页面样式 */
-.main-app-container { min-height: 100vh; background: #f9f9f9; padding: 20px; }
-.main-app-content { max-width: 600px; margin: 0 auto; }
-.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.user-info { display: flex; align-items: center; gap: 10px; font-weight: bold; }
-.avatar-placeholder { width: 40px; height: 40px; background: var(--theme-black); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.mini-btn { padding: 5px 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-.page-title { font-weight: 900; letter-spacing: -1px; }
+.main-page-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fafafa;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
 
-.card { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.row { display: flex; gap: 10px; margin-bottom: 10px; }
-.col { display: flex; flex-direction: column; flex: 1; }
-input, select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex: 1; outline: none; }
-button { cursor: pointer; border: none; border-radius: 4px; padding: 8px 12px; }
+.page-title {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #000;
+  z-index: 1;
+}
 
-.cost-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.cost-item { display: flex; flex-direction: column; align-items: center; }
-.cost-item input { text-align: center; width: 100%; box-sizing: border-box; }
+.title-line {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 2px 0;
+}
 
-.game-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-.game-btn { background: #e3f2fd; color: #1565c0; font-weight: bold; }
-.session-box { border: 2px dashed #ddd; padding: 10px; margin-bottom: 15px; background: #fafafa; border-radius: 8px; }
-.session-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.records-area { border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px; }
-.record-row { display: flex; gap: 5px; margin-bottom: 5px; }
-.del-btn { background: #ffebee; color: #c62828; }
-.del-btn.small { padding: 0 10px; }
-.add-sub-btn { background: #f1f8e9; color: #33691e; width: 100%; }
-.submit-btn { width: 100%; background: #4caf50; color: white; padding: 15px; font-size: 1.2rem; }
+.core-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 2;
+}
 
-/* 全局变量补充 */
-:root {
-  --theme-black: #000;
-  --theme-green: #4caf50;
+/* 圆形按钮/弹窗容器：去掉黑色边框 */
+.check-btn-container {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: #000;
+  /* 修改：删除黑色边框属性 */
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.5s ease-in-out;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 弹窗展开状态：去掉黑色边框 */
+.check-btn-container.dialog-expanded {
+  background-color: #fff;
+  /* 修改：删除边框宽度属性 */
+  cursor: default;
+  width: v-bind(dialogSize + 'px');
+  height: v-bind(dialogSize + 'px');
+}
+
+/* 动态内接长方形容器：四周渐变羽化 + 上下留白 */
+.dialog-content-wrapper {
+  /* 布局：居中对齐内部内容，上下留白 */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 30px 16px; /* 修改：上下30px留白，左右16px内边距 */
+  box-sizing: border-box;
+  /* 修改：四周渐变消失的羽化效果（mask实现） */
+  -webkit-mask-image: linear-gradient(
+    to top, transparent 0%, rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%, transparent 100%
+  ), linear-gradient(
+    to left, transparent 0%, rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%, transparent 100%
+  );
+  mask-image: linear-gradient(
+    to top, transparent 0%, rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%, transparent 100%
+  ), linear-gradient(
+    to left, transparent 0%, rgba(0, 0, 0, 1) 15%,
+    rgba(0, 0, 0, 1) 85%, transparent 100%
+  );
+  /* 溢出处理：内容超出时可滚动 */
+  overflow: hidden;
+  /* 过渡：跟随尺寸变化平滑过渡 */
+  transition: all 0.5s ease-in-out;
+  /* 圆角过渡 */
+  border-radius: 16px;
+}
+
+/* 按钮默认文字 */
+.btn-text {
+  transition: all 0.5s ease;
+}
+
+/* 遮罩层 */
+.dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.mask-tip {
+  color: #fff;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.view-records-link {
+  font-size: 0.9rem;
+  color: #666;
+  cursor: pointer;
+  text-decoration: underline;
+  z-index: 2;
+}
+
+.view-records-link:hover {
+  color: #333;
+}
+
+.logout-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  z-index: 3;
+}
+
+.logout-btn:hover {
+  color: #333;
 }
 </style>
