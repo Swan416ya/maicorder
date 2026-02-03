@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// 导入登录组件 和 你已写好的 MainLayout 组件（确保路径和你的文件结构一致）
 import LoginLayout from '@/components/LoginLayout.vue'
-import MainLayout from '@/components/MainLayout.vue' // 替换：删除 Home，导入 MainLayout
+import MainLayout from '@/components/MainLayout.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/login' // 默认跳转到登录页
+    redirect: '/login'
   },
   {
     path: '/login',
@@ -14,10 +13,10 @@ const routes = [
     component: LoginLayout
   },
   {
-    path: '/main', // 路由路径可自定义，建议贴合 MainLayout
+    path: '/main',
     name: 'Main',
-    component: MainLayout, // 替换：组件改为 MainLayout
-    meta: { requiresAuth: true } // 保留登录保护，防止未登录直接访问
+    component: MainLayout,
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -26,14 +25,20 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫：验证登录状态（不变）
-// router.beforeEach((to, from, next) => {
-//   const isLogin = localStorage.getItem('token')
-//   if (to.meta.requiresAuth && !isLogin) {
-//     next('/login')
-//   } else {
-//     next()
-//   }
-// })
+// 恢复路由守卫并优化
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  const requiresAuth = to.meta.requiresAuth
+
+  if (requiresAuth && !token) {
+    // 未登录，跳转到登录页
+    next('/login')
+  } else if (!requiresAuth && token && to.path === '/login') {
+    // 已登录，访问登录页自动跳转到主页面
+    next('/main')
+  } else {
+    next()
+  }
+})
 
 export default router

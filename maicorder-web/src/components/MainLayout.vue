@@ -2,14 +2,22 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+// 接口基础路径：生产环境/开发环境区分
 const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
+
+// 初始化axios请求头（携带登录后的token）
+const token = localStorage.getItem('token')
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+}
+axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 // 接收父组件传来的当前用户
 const props = defineProps(['currentUser'])
 // 定义退出事件
 const emit = defineEmits(['logout'])
 
-// --- 业务逻辑开始 ---
+// 游戏配置
 const GAME_CONFIG = {
   'MAIMAI_DX': { label: '舞萌 DX', lamps: ['鸟', '鸟+', 'FC', 'AP', 'FDX'] },
   'CHUNITHM': { label: '中二节奏', lamps: ['AJ', 'AJC', 'FC'] },
@@ -17,6 +25,7 @@ const GAME_CONFIG = {
   'IIDX': { label: 'IIDX', lamps: ['Hard', 'ExHard'] }
 }
 
+// 获取今日日期字符串
 const getTodayString = () => {
   const date = new Date()
   const year = date.getFullYear()
@@ -25,65 +34,93 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`
 }
 
+// 响应式数据
 const arcades = ref([])
 const newArcadeName = ref('')
 const form = ref({
   arcadeId: null,
   checkInDate: getTodayString(),
-  coinCost: '', foodCost: '', waterCost: '', transportCost: '',
+  coinCost: '', 
+  foodCost: '', 
+  waterCost: '', 
+  transportCost: '',
   comment: '',
   gameSessions: [] 
 })
 
+// 获取机厅列表
 const fetchArcades = async () => {
   try {
     const res = await axios.get(`${API_BASE}/arcades`)
     arcades.value = res.data.filter(a => a.name)
-  } catch (e) { console.error(e) }
+  } catch (e) { 
+    console.error('获取机厅列表失败：', e)
+    alert('获取机厅列表失败，请检查登录状态或网络')
+  }
 }
 
+// 创建新机厅
 const createArcade = async () => {
-  if(!newArcadeName.value) return
+  if(!newArcadeName.value.trim()) return alert('请输入机厅名称！')
   try {
-    await axios.post(`${API_BASE}/arcades`, {name: newArcadeName.value})
+    await axios.post(`${API_BASE}/arcades`, {name: newArcadeName.value.trim()})
     newArcadeName.value = ''
     fetchArcades()
-  } catch(e) { alert('创建失败') }
+    alert('机厅创建成功！')
+  } catch(e) { 
+    console.error('创建机厅失败：', e)
+    alert('创建失败：' + (e.response?.data?.message || e.message))
+  }
 }
 
+// 游戏场次相关方法
 const addSession = (gameKey) => form.value.gameSessions.push({ gameName: gameKey, pcCount: '', currentRating: '', records: [] })
 const addRecordToSession = (idx) => form.value.gameSessions[idx].records.push({ songName: '', score: '', clearStatus: '' })
 const removeSession = (idx) => form.value.gameSessions.splice(idx, 1)
 const removeRecord = (sIdx, rIdx) => form.value.gameSessions[sIdx].records.splice(rIdx, 1)
 
+// 提交出勤记录
 const submitCheckIn = async () => {
+  // 基础验证
   if (!form.value.arcadeId) return alert("请选择机厅！")
+  if (form.value.gameSessions.length === 0) return alert("请添加至少一个游戏场次！")
   
   try {
     const payload = {
-      userId: props.currentUser.id, // 使用 props 里的用户ID
+      userId: props.currentUser.id,
       arcade: { id: form.value.arcadeId },
       checkInDate: form.value.checkInDate,
-      coinCost: form.value.coinCost, 
-      foodCost: form.value.foodCost,
-      waterCost: form.value.waterCost, 
-      transportCost: form.value.transportCost,
+      coinCost: form.value.coinCost || 0, 
+      foodCost: form.value.foodCost || 0,
+      waterCost: form.value.waterCost || 0, 
+      transportCost: form.value.transportCost || 0,
       comment: form.value.comment,
-      gameSessions: form.value.gameSessions
+      gameSessions: form.value.gameSessions.map(sess => ({
+        ...sess,
+        pcCount: sess.pcCount || 0,
+        records: sess.records.filter(rec => rec.songName.trim()) // 过滤空的战绩
+      }))
     }
     await axios.post(`${API_BASE}/checkins`, payload)
     alert("出勤记录保存成功！")
-    // 重置表单
-    form.value.gameSessions = []
-    form.value.comment = ''
-    form.value.coinCost = ''; form.value.foodCost = ''
-    form.value.waterCost = ''; form.value.transportCost = ''
+    // 重置表单（完整重置）
+    form.value = {
+      arcadeId: null,
+      checkInDate: getTodayString(),
+      coinCost: '', 
+      foodCost: '', 
+      waterCost: '', 
+      transportCost: '',
+      comment: '',
+      gameSessions: [] 
+    }
   } catch (e) {
-    console.error(e)
-    alert("保存失败：" + e.message)
+    console.error('保存出勤记录失败：', e)
+    alert("保存失败：" + (e.response?.data?.message || e.message))
   }
 }
 
+// 页面挂载时加载机厅列表
 onMounted(() => {
   fetchArcades()
 })
@@ -207,5 +244,11 @@ button { cursor: pointer; border: none; border-radius: 4px; padding: 8px 12px; }
 .del-btn { background: #ffebee; color: #c62828; }
 .del-btn.small { padding: 0 10px; }
 .add-sub-btn { background: #f1f8e9; color: #33691e; width: 100%; }
-.submit-btn { width: 100%; background: var(--theme-green); color: white; padding: 15px; font-size: 1.2rem; }
+.submit-btn { width: 100%; background: #4caf50; color: white; padding: 15px; font-size: 1.2rem; }
+
+/* 全局变量补充 */
+:root {
+  --theme-black: #000;
+  --theme-green: #4caf50;
+}
 </style>

@@ -1,11 +1,9 @@
 package com.maicorder.common;
 
-import lombok.Data;
 
 /**
  * RESTful统一响应格式
  */
-@Data
 public class Result<T> {
     // 响应码：200成功/400参数错/401未认证/500系统错
     private Integer code;
@@ -39,5 +37,29 @@ public class Result<T> {
     // 快捷方法：参数错误（400）
     public static <T> Result<T> badRequest(String message) {
         return fail(400, message);
+    }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
     }
 }

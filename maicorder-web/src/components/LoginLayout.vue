@@ -1,124 +1,124 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router' // 仅新增：导入路由（不影响视觉）
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import logoImg from '@/assets/logo.png' 
 
-// 接口基础路径：生产环境/开发环境区分（和你最初一致）
+// 接口基础路径：生产环境/开发环境区分
 const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
 
-// 仅新增：路由实例（不影响视觉）
+// 路由实例
 const router = useRouter()
 
-// 派发登录成功事件给父组件（保留，如果你需要，不影响视觉，可留可删）
+// 派发登录成功事件给父组件
 const emit = defineEmits(['login-success'])
 
-// 切换登录/注册模式（和你最初一致）
+// 切换登录/注册模式
 const isRegisterMode = ref(false)
 
-// 表单数据绑定（和你最初一致）
+// 表单数据绑定
 const authForm = ref({ 
   username: '', 
   password: '', 
   email: '' 
 })
 
-// 加载状态（防止重复点击）（和你最初一致）
+// 加载状态（防止重复点击）
 const isLoading = ref(false)
 
-// 10 格连接线对应 10 个黑块（保留之前的修改，和你最初一致）
+// 装饰块数量配置
 const tailBlocks = Array.from({ length: 40 })
 const connectorBlocks = Array.from({ length: 15 })
 
-// 登录/注册核心方法（仅修改：删除alert弹窗 + 新增登录跳转，其他逻辑完全不变）
+// 登录/注册核心方法（修复：添加请求头、优化错误处理、确保路由跳转）
 const handleAuth = async () => { 
-  // 新增：测试点击是否触发方法
   console.log('===== 按钮点击成功，进入登录方法 =====')
 
-  // 1. 表单基础验证（删除alert，改为console.warn，不影响视觉）
+  // 1. 表单基础验证
   if (!authForm.value.username || !authForm.value.password) {
-    console.warn('用户名和密码不能为空！') // 替换alert，不弹框
+    console.warn('用户名和密码不能为空！')
     return
   }
-  // 注册模式额外验证邮箱
   if (isRegisterMode.value && !authForm.value.email) {
-    console.warn('注册邮箱不能为空！') // 替换alert，不弹框
+    console.warn('注册邮箱不能为空！')
     return
   }
 
-  // 2. 设置加载状态，防止重复提交（和你最初一致）
   isLoading.value = true
 
   try {
     let response
-    // 3. 区分登录/注册接口请求（和你最初一致）
+    axios.defaults.headers.common['Content-Type'] = 'application/json'
+    
     if (isRegisterMode.value) {
-      // 注册接口：POST /api/register
+      // 注册逻辑（保持不变）
       response = await axios.post(`${API_BASE}/register`, {
         username: authForm.value.username,
         password: authForm.value.password,
         email: authForm.value.email
       })
-      // 注册成功：切回登录模式，清空表单（删除alert，新增console.log，不影响视觉）
       console.log('注册成功！请登录')
       isRegisterMode.value = false
       authForm.value = { username: '', password: '', email: '' }
     } else {
-      // 登录接口：POST /api/login
-      response = await axios.post(`${API_BASE}/login`, {
+      // 登录请求：后端返回的是Result对象
+      const response = await axios.post(`${API_BASE}/login`, {
         username: authForm.value.username,
         password: authForm.value.password
       })
-      // 登录成功：获取token/用户信息，触发父组件事件，新增路由跳转（不影响视觉）
-      const { data } = response
-      // 示例：将token存入本地存储（根据后端返回格式调整）（和你最初一致）
-      if (data.token) {
-        localStorage.setItem('token', data.token)
-      }
-      // 通知父组件登录成功（可传递用户信息）（和你最初一致）
-      emit('login-success', data.user || { username: authForm.value.username })
-      console.log('登录成功！') // 替换alert，不弹框
       
-      // 仅新增：登录成功跳转至 MainLayout（路径对应路由配置的 /main，不影响视觉）
-      console.log('当前路由实例：', router)
-      console.log('准备跳转的路径：', '/main')
-      router.push('/main')
+      // 【关键修复】解析Result结构：response.data是Result对象，result.data才是业务数据
+      const result = response.data;
+      
+      // 先判断后端返回的code是否为200（成功）
+      if (result.code === 200) {
+        const businessData = result.data; // 这里才是包含token的业务数据
+        // 检查业务数据中是否有token
+        if (businessData.token) {
+          localStorage.setItem('token', businessData.token);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${businessData.token}`;
+          emit('login-success', businessData.user || { username: authForm.value.username });
+          console.log('登录成功！跳转至主页面');
+          await router.push('/main'); // 成功跳转
+        } else {
+          console.error('登录失败：后端业务数据中未返回token');
+          alert('登录失败：系统异常');
+        }
+      } else {
+        // 后端返回业务错误（比如用户名/密码错误）
+        console.error('登录失败：', result.message);
+        alert(result.message || '登录失败');
+      }
     }
-
-    console.log('接口响应：', response.data) // 和你最初一致
   } catch (error) {
-    // 4. 错误处理（删除alert，改为console.error，不影响视觉）
+    // 【关键修复】请求失败（如后端500）时，不跳转，提示错误
+    let errMsg = '操作失败，请稍后重试'
     if (error.response) {
-      // 后端返回错误（4xx/5xx）
-      const errMsg = error.response.data?.message || `请求失败：${error.response.status}`
-      console.error('后端返回错误：', errMsg) // 替换alert
+      errMsg = error.response.data?.message || `请求失败：${error.response.status}`
     } else if (error.request) {
-      // 网络错误（无响应）
-      console.error('网络异常，请检查后端服务是否启动！') // 替换alert
+      errMsg = '网络异常，请检查后端服务是否启动！'
     } else {
-      // 其他错误
-      console.error(`请求异常：${error.message}`) // 替换alert
+      errMsg = `请求异常：${error.message}`
     }
-    console.error('授权请求失败：', error) // 和你最初一致
+    console.error('授权请求失败：', errMsg)
+    alert(errMsg) // 提示用户失败原因
   } finally {
-    // 5. 重置加载状态（和你最初一致）
     isLoading.value = false
   }
 }
 </script>
 
 <template>
-  <!-- 完全复制你最初的template，一字不改，保留所有效果 -->
   <div class="login-layout-container">
-    <!-- 1. 背景网格（从 Logo 左侧外 10 格开始渲染） -->
+    <!-- 1. 背景网格 -->
     <div class="grid-bg"></div>
 
-    <!-- 2. Logo 展示（贴左对齐） -->
+    <!-- 2. Logo 展示 -->
     <div class="logo-box anim-fade-in">
       <img :src="logoImg" alt="系统Logo" />
     </div>
 
-    <!-- 3. 中间连接装饰方块（10 格） -->
+    <!-- 3. 中间连接装饰方块 -->
     <div class="connector-bar">
       <div 
         v-for="(n, i) in connectorBlocks" 
@@ -148,7 +148,6 @@ const handleAuth = async () => {
       <!-- 操作按钮区域 -->
       <div class="login-btn-wrapper anim-btn-fade">
         <button @click="handleAuth" class="grid-btn" :disabled="isLoading">
-          <!-- 加载状态提示 -->
           {{ isLoading ? (isRegisterMode ? 'REGISTERING...' : 'LOGGING IN...') : (isRegisterMode ? 'REGISTER' : 'LOGIN') }}
         </button>
         <!-- 切换登录/注册模式 -->
@@ -171,25 +170,19 @@ const handleAuth = async () => {
 </template>
 
 <style scoped>
-/* 完全复制你最初的style，一字不改，保留所有样式、动画、注释 */
-/* ================= 全局变量配置 ================= */
+/* 全局变量配置 */
 .login-layout-container {
-  /* Logo 高度：25vh（屏幕高度的1/4），可按需调整 */
   --login-logo-size: 25vh; 
-  /* 装饰方块大小：Logo高度 / 4 */
   --login-cell-size: calc(var(--login-logo-size) / 4);
   
-  /* Logo 贴左，无左侧空白 */
   --guide-x: 15vw; 
   --logo-left: var(--guide-x);
   --logo-top: calc((100vh - var(--login-logo-size)) / 2);
   
-  /* 保留 10 格距离配置 */
   --form-width: calc(var(--login-cell-size) * 5);
   --connector-length: calc(10 * var(--login-cell-size));
   --form-left: calc(var(--logo-left) + var(--login-logo-size) + var(--connector-length));
   
-  /* 颜色配置 */
   --grid-color: #ccc;
   --theme-black: #000;
 
@@ -198,10 +191,9 @@ const handleAuth = async () => {
   position: relative;
   margin: 0;
   padding: 0;
-  /*overflow: hidden;*/
 }
 
-/* ================= 动画关键帧定义 ================= */
+/* 动画关键帧定义 */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -217,7 +209,7 @@ const handleAuth = async () => {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ================= 通用动画类 ================= */
+/* 通用动画类 */
 .anim-fade-in {
   animation: fadeIn 0.8s ease-out backwards;
 }
@@ -230,8 +222,7 @@ const handleAuth = async () => {
   animation: popOut 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s backwards;
 }
 
-/* ================= 布局组件样式（核心修正：网格从 Logo 左侧外 10 格开始） ================= */
-/* 背景网格（★ 核心修正：水平起始位置 = Logo左侧 - 10个网格单元，垂直与Logo顶部对齐） */
+/* 布局组件样式 */
 .grid-bg {
   position: absolute;
   top: 0;
@@ -247,7 +238,6 @@ const handleAuth = async () => {
   background-position: 0 var(--logo-top);
 }
 
-/* Logo 容器（贴左，无额外偏移） */
 .logo-box {
   position: absolute;
   z-index: 10;
@@ -270,7 +260,6 @@ const handleAuth = async () => {
   display: block;
 }
 
-/* 中间连接装饰条（10 格宽度） */
 .connector-bar {
   position: absolute;
   z-index: 15;
@@ -281,7 +270,6 @@ const handleAuth = async () => {
   height: var(--login-cell-size);
 }
 
-/* 右侧尾部装饰条 */
 .black-bar-tail {
   position: absolute;
   z-index: 10;
@@ -290,7 +278,6 @@ const handleAuth = async () => {
   top: calc(var(--logo-top) + (3 * var(--login-cell-size)));
 }
 
-/* 装饰方块 */
 .black-block {
   width: var(--login-cell-size);
   height: var(--login-cell-size);
@@ -298,7 +285,6 @@ const handleAuth = async () => {
   animation: blockEnter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
 
-/* 表单层容器（左对齐，无左侧空白） */
 .form-layer {
   position: absolute;
   z-index: 20;
@@ -309,7 +295,6 @@ const handleAuth = async () => {
   pointer-events: none;
 }
 
-/* 输入框堆叠容器 */
 .input-stack {
   position: absolute;
   top: 0;
@@ -319,7 +304,6 @@ const handleAuth = async () => {
   pointer-events: auto;
 }
 
-/* 输入框样式 */
 .grid-input {
   position: absolute;
   left: 0;
@@ -350,7 +334,6 @@ const handleAuth = async () => {
   color: #333;
 }
 
-/* 登录/注册按钮容器 */
 .login-btn-wrapper {
   position: absolute;
   left: 0;
@@ -360,7 +343,6 @@ const handleAuth = async () => {
   top: calc(var(--login-cell-size) * 3);
 }
 
-/* 核心操作按钮 */
 .grid-btn {
   width: 100%;
   height: 100%;
@@ -377,7 +359,6 @@ const handleAuth = async () => {
   transition: background-color 0.3s ease;
 }
 
-/* 禁用状态样式 */
 .grid-btn:disabled {
   background-color: #666;
   cursor: not-allowed;
@@ -387,7 +368,6 @@ const handleAuth = async () => {
   background-color: #333;
 }
 
-/* 切换模式文本 */
 .switch-text {
   position: absolute;
   top: 105%;
