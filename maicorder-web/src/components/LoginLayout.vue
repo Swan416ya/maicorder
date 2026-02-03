@@ -1,175 +1,345 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
-import logoImg from '@/assets/logo.png' // 注意这里的 @ 也是指向 src 目录
+import logoImg from '@/assets/logo.png' 
 
+// 接口基础路径：生产环境/开发环境区分
 const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
 
-// 定义事件：登录成功后通知父组件
+// 派发登录成功事件给父组件
 const emit = defineEmits(['login-success'])
 
+// 切换登录/注册模式
 const isRegisterMode = ref(false)
-const authForm = ref({ username: '', password: '', email: '' })
 
-const handleAuth = async () => {
-  if (!authForm.value.username || !authForm.value.password) return alert("账号密码不能为空")
-  
+// 表单数据绑定
+const authForm = ref({ 
+  username: '', 
+  password: '', 
+  email: '' 
+})
+
+// 10 格连接线对应 10 个黑块（保留之前的修改）
+const tailBlocks = Array.from({ length: 40 })
+const connectorBlocks = Array.from({ length: 15 })
+
+// 登录/注册核心方法（占位，需补充实际业务逻辑）
+const handleAuth = async () => { 
   try {
-    const url = isRegisterMode.value ? `${API_BASE}/users` : `${API_BASE}/login`
-    const res = await axios.post(url, authForm.value)
-    
-    if (res.data.success) {
-      if (isRegisterMode.value) {
-        alert("注册成功！请登录")
-        isRegisterMode.value = false
-      } else {
-        // 登录成功，把用户信息“发射”给父组件 App.vue
-        emit('login-success', res.data.user)
-      }
-    } else {
-      alert("操作失败：" + res.data.message)
-    }
-  } catch (e) {
-    console.error(e)
-    alert("连接服务器失败")
+    console.log('当前模式：', isRegisterMode.value ? '注册' : '登录')
+    console.log('表单数据：', authForm.value)
+  } catch (error) {
+    console.error('授权请求失败：', error)
   }
 }
 </script>
 
 <template>
-  <div class="design-login-page">
-    <!-- 背景网格 -->
+  <div class="login-layout-container">
+    <!-- 1. 背景网格（从 Logo 左侧外 10 格开始渲染） -->
     <div class="grid-bg"></div>
 
-    <div class="content-wrapper">
-      <!-- 左侧：Logo区域 -->
-      <div class="logo-section">
-        <div class="logo-box">
-          <img :src="logoImg" alt="勤了吗 Logo" />
+    <!-- 2. Logo 展示（贴左对齐） -->
+    <div class="logo-box anim-fade-in">
+      <img :src="logoImg" alt="系统Logo" />
+    </div>
+
+    <!-- 3. 中间连接装饰方块（10 格） -->
+    <div class="connector-bar">
+      <div 
+        v-for="(n, i) in connectorBlocks" 
+        :key="i" 
+        class="black-block"
+        :style="{ animationDelay: `${0.4 + (i * 0.05)}s` }"
+      ></div>
+    </div>
+
+    <!-- 4. 登录/注册表单区域 -->
+    <div class="form-layer">
+      <div class="input-stack anim-pop-out" :class="{ 'register-mode': isRegisterMode }">
+        <!-- 用户名输入框 -->
+        <div class="grid-input username-pos">
+          <input v-model="authForm.username" type="text" placeholder="USERNAME" />
         </div>
-        <div class="black-line"></div>
-      </div>
-
-      <!-- 右侧：表单区域 -->
-      <div class="form-section">
-        <div class="form-box">
-          <h2 class="form-title">
-            {{ isRegisterMode ? 'REGISTER' : 'LOGIN' }}
-            <span class="sub-text">{{ isRegisterMode ? '注册账号' : '身份验证' }}</span>
-          </h2>
-
-          <div class="input-group">
-            <label>USERNAME</label>
-            <input v-model="authForm.username" type="text" />
-          </div>
-
-          <div class="input-group">
-            <label>PASSWORD</label>
-            <input v-model="authForm.password" type="password" />
-          </div>
-
-          <div class="input-group" v-if="isRegisterMode">
-            <label>EMAIL</label>
-            <input v-model="authForm.email" type="text" placeholder="Optional" />
-          </div>
-
-          <div class="action-group">
-            <button @click="handleAuth" class="pixel-btn">
-              {{ isRegisterMode ? '注册 / REGISTER' : '登录 / ENTER' }}
-            </button>
-            
-            <div class="switch-link" @click="isRegisterMode = !isRegisterMode">
-              {{ isRegisterMode ? '<< 返回登录' : '注册新账号 >>' }}
-            </div>
-          </div>
+        <!-- 密码输入框 -->
+        <div class="grid-input password-pos">
+          <input v-model="authForm.password" type="password" placeholder="PASSWORD" />
+        </div>
+        <!-- 注册模式专属：邮箱输入框 -->
+        <div v-if="isRegisterMode" class="grid-input email-pos">
+          <input v-model="authForm.email" type="text" placeholder="EMAIL" />
         </div>
       </div>
+
+      <!-- 操作按钮区域 -->
+      <div class="login-btn-wrapper anim-btn-fade">
+        <button @click="handleAuth" class="grid-btn">
+          {{ isRegisterMode ? 'REGISTER' : 'LOGIN' }}
+        </button>
+        <!-- 切换登录/注册模式 -->
+        <div class="switch-text" @click="isRegisterMode = !isRegisterMode">
+          {{ isRegisterMode ? '&gt;&gt; 返回登录' : '&gt;&gt; 注册新账号' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 右侧尾部装饰方块 -->
+    <div class="black-bar-tail">
+      <div 
+        v-for="(n, i) in tailBlocks" 
+        :key="i" 
+        class="black-block"
+        :style="{ animationDelay: `${1.5 + (i * 0.04)}s` }"
+      ></div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* 这里的样式只对当前组件生效 */
-.design-login-page {
-  width: 100vw; height: 100vh;
-  position: relative; overflow: hidden;
-  background-color: #fff;
-  display: flex; align-items: center; justify-content: center;
+/* ================= 全局变量配置 ================= */
+.login-layout-container {
+  /* Logo 高度：25vh（屏幕高度的1/4），可按需调整 */
+  --login-logo-size: 25vh; 
+  /* 装饰方块大小：Logo高度 / 4 */
+  --login-cell-size: calc(var(--login-logo-size) / 4);
+  
+  /* Logo 贴左，无左侧空白 */
+  --guide-x: 0vw; 
+  --logo-left: var(--guide-x);
+  --logo-top: calc((100vh - var(--login-logo-size)) / 2);
+  
+  /* 保留 10 格距离配置 */
+  --form-width: calc(var(--login-cell-size) * 5);
+  --connector-length: calc(10 * var(--login-cell-size));
+  --form-left: calc(var(--logo-left) + var(--login-logo-size) + var(--connector-length));
+  
+  /* 颜色配置 */
+  --grid-color: #ccc;
+  --theme-black: #000;
+
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  /*overflow: hidden;*/
 }
 
-/* 使用 var() 调用 App.vue 里定义的全局变量 */
+/* ================= 动画关键帧定义 ================= */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes blockEnter {
+  0% { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popOut {
+  0% { opacity: 0; transform: translateY(50px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= 通用动画类 ================= */
+.anim-fade-in {
+  animation: fadeIn 0.8s ease-out backwards;
+}
+
+.anim-btn-fade {
+  animation: fadeIn 0.5s ease-out 1.2s backwards;
+}
+
+.anim-pop-out {
+  animation: popOut 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s backwards;
+}
+
+/* ================= 布局组件样式（核心修正：网格从 Logo 左侧外 10 格开始） ================= */
+/* 背景网格（★ 核心修正：水平起始位置 = Logo左侧 - 10个网格单元，垂直与Logo顶部对齐） */
 .grid-bg {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0;
-  background-size: var(--cell-size) var(--cell-size);
-  background-image:
+  position: absolute;
+  top: 0;
+  left: calc(var(--logo-left) - 10 * var(--login-cell-size));
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: var(--login-cell-size) var(--login-cell-size);
+  background-image: 
     linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-position: 0 var(--logo-top);
 }
 
-.content-wrapper {
-  position: relative; z-index: 10;
-  display: flex; width: 100%; max-width: 1400px; height: 600px;
-  align-items: center;
-}
-
-.logo-section {
-  position: relative;
-  width: calc(var(--cell-size) * 4);
-  height: calc(var(--cell-size) * 4);
-  margin-left: calc(var(--cell-size) * 2);
-  flex-shrink: 0;
-}
-
-.logo-box { width: 100%; height: 100%; background: #000; }
-.logo-box img { width: 100%; height: 100%; object-fit: stretch; display: block; }
-
-.black-line {
+/* Logo 容器（贴左，无额外偏移） */
+.logo-box {
   position: absolute;
-  height: var(--cell-size);
+  z-index: 10;
+  width: var(--login-logo-size);
+  height: var(--login-logo-size);
+  left: var(--logo-left);
+  top: var(--logo-top);
+  background-color: #fff;
+  box-sizing: content-box;
+  border: 1px solid var(--grid-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* 中间连接装饰条（10 格宽度） */
+.connector-bar {
+  position: absolute;
+  z-index: 15;
+  display: flex;
+  left: calc(var(--logo-left) + var(--login-logo-size));
+  top: calc(var(--logo-top) + (3 * var(--login-cell-size)));
+  width: var(--connector-length);
+  height: var(--login-cell-size);
+}
+
+/* 右侧尾部装饰条 */
+.black-bar-tail {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  left: calc(var(--form-left) + var(--form-width));
+  top: calc(var(--logo-top) + (3 * var(--login-cell-size)));
+}
+
+/* 装饰方块 */
+.black-block {
+  width: var(--login-cell-size);
+  height: var(--login-cell-size);
   background-color: var(--theme-black);
-  bottom: 0; left: 100%; width: 200vw; pointer-events: none;
+  animation: blockEnter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
 
-.form-section {
-  flex: 1; display: flex; justify-content: center; align-items: center;
-  position: relative; transform: translateY(-40px);
-}
-
-.form-box {
-  width: 360px; background: #fff;
-  border: 4px solid var(--theme-black);
-  padding: 40px;
-  box-shadow: 10px 10px 0 rgba(0,0,0,0.1);
+/* 表单层容器（左对齐，无左侧空白） */
+.form-layer {
+  position: absolute;
   z-index: 20;
+  left: var(--form-left);
+  top: var(--logo-top);
+  width: var(--form-width);
+  height: 100vh;
+  pointer-events: none;
 }
 
-.form-title { font-size: 2rem; font-weight: 900; margin: 0 0 30px 0; letter-spacing: -1px; line-height: 1; }
-.sub-text { display: block; font-size: 0.9rem; font-weight: normal; color: #666; margin-top: 5px; letter-spacing: 0; }
-
-.input-group { margin-bottom: 20px; }
-.input-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; letter-spacing: 1px; }
-.input-group input {
-  width: 100%; padding: 10px; box-sizing: border-box;
-  border: 2px solid #ddd; font-family: monospace; font-size: 1.1rem;
-  outline: none; transition: 0.2s;
+/* 输入框堆叠容器 */
+.input-stack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
 }
-.input-group input:focus { border-color: var(--theme-black); background: #fafafa; }
 
-.pixel-btn {
-  width: 100%; padding: 15px; background: var(--theme-black); color: #fff;
-  border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer;
-  margin-top: 10px; transition: 0.2s;
+/* 输入框样式 */
+.grid-input {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--login-cell-size);
+  background: #fff;
+  border: 3px solid var(--theme-black);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  transition: top 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.pixel-btn:hover { background: #333; transform: translateY(-2px); box-shadow: 0 4px 0 #666; }
 
-.switch-link { text-align: center; margin-top: 20px; font-size: 0.9rem; cursor: pointer; text-decoration: underline; color: #666; }
-.switch-link:hover { color: #000; }
+.grid-input input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding-left: 15px;
+  color: var(--theme-black);
+  background: transparent;
+}
 
-@media (max-width: 900px) {
-  .content-wrapper { flex-direction: column; height: auto; padding-top: 50px; }
-  .logo-section { margin-left: 0; margin-bottom: 40px; width: 240px; height: 240px; }
-  .black-line { display: none; }
-  .form-section { transform: translateY(0); width: 100%; padding: 0 20px; }
-  .form-box { width: 100%; }
+.grid-input input:focus {
+  color: #333;
+}
+
+/* 登录/注册按钮容器 */
+.login-btn-wrapper {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--login-cell-size);
+  pointer-events: auto;
+  top: calc(var(--login-cell-size) * 3);
+}
+
+/* 核心操作按钮 */
+.grid-btn {
+  width: 100%;
+  height: 100%;
+  background-color: var(--theme-black);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border: none;
+  box-sizing: border-box;
+  border: 3px solid #fff;
+  transition: background-color 0.3s ease;
+}
+
+.grid-btn:hover {
+  background-color: #333;
+}
+
+/* 切换模式文本 */
+.switch-text {
+  position: absolute;
+  top: 105%;
+  right: 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #666;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.switch-text:hover {
+  color: var(--theme-black);
+}
+
+/* 输入框位置控制 */
+.password-pos {
+  top: calc(var(--login-cell-size) * 1);
+}
+
+.username-pos {
+  top: calc(var(--login-cell-size) * -1);
+}
+
+.register-mode .email-pos {
+  top: calc(var(--login-cell-size) * 1);
+}
+
+.register-mode .password-pos {
+  top: calc(var(--login-cell-size) * -1);
+}
+
+.register-mode .username-pos {
+  top: calc(var(--login-cell-size) * -3);
 }
 </style>
