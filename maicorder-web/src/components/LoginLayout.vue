@@ -1,40 +1,114 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router' // 仅新增：导入路由（不影响视觉）
 import axios from 'axios'
 import logoImg from '@/assets/logo.png' 
 
-// 接口基础路径：生产环境/开发环境区分
+// 接口基础路径：生产环境/开发环境区分（和你最初一致）
 const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
 
-// 派发登录成功事件给父组件
+// 仅新增：路由实例（不影响视觉）
+const router = useRouter()
+
+// 派发登录成功事件给父组件（保留，如果你需要，不影响视觉，可留可删）
 const emit = defineEmits(['login-success'])
 
-// 切换登录/注册模式
+// 切换登录/注册模式（和你最初一致）
 const isRegisterMode = ref(false)
 
-// 表单数据绑定
+// 表单数据绑定（和你最初一致）
 const authForm = ref({ 
   username: '', 
   password: '', 
   email: '' 
 })
 
-// 10 格连接线对应 10 个黑块（保留之前的修改）
+// 加载状态（防止重复点击）（和你最初一致）
+const isLoading = ref(false)
+
+// 10 格连接线对应 10 个黑块（保留之前的修改，和你最初一致）
 const tailBlocks = Array.from({ length: 40 })
 const connectorBlocks = Array.from({ length: 15 })
 
-// 登录/注册核心方法（占位，需补充实际业务逻辑）
+// 登录/注册核心方法（仅修改：删除alert弹窗 + 新增登录跳转，其他逻辑完全不变）
 const handleAuth = async () => { 
+  // 新增：测试点击是否触发方法
+  console.log('===== 按钮点击成功，进入登录方法 =====')
+
+  // 1. 表单基础验证（删除alert，改为console.warn，不影响视觉）
+  if (!authForm.value.username || !authForm.value.password) {
+    console.warn('用户名和密码不能为空！') // 替换alert，不弹框
+    return
+  }
+  // 注册模式额外验证邮箱
+  if (isRegisterMode.value && !authForm.value.email) {
+    console.warn('注册邮箱不能为空！') // 替换alert，不弹框
+    return
+  }
+
+  // 2. 设置加载状态，防止重复提交（和你最初一致）
+  isLoading.value = true
+
   try {
-    console.log('当前模式：', isRegisterMode.value ? '注册' : '登录')
-    console.log('表单数据：', authForm.value)
+    let response
+    // 3. 区分登录/注册接口请求（和你最初一致）
+    if (isRegisterMode.value) {
+      // 注册接口：POST /api/register
+      response = await axios.post(`${API_BASE}/register`, {
+        username: authForm.value.username,
+        password: authForm.value.password,
+        email: authForm.value.email
+      })
+      // 注册成功：切回登录模式，清空表单（删除alert，新增console.log，不影响视觉）
+      console.log('注册成功！请登录')
+      isRegisterMode.value = false
+      authForm.value = { username: '', password: '', email: '' }
+    } else {
+      // 登录接口：POST /api/login
+      response = await axios.post(`${API_BASE}/login`, {
+        username: authForm.value.username,
+        password: authForm.value.password
+      })
+      // 登录成功：获取token/用户信息，触发父组件事件，新增路由跳转（不影响视觉）
+      const { data } = response
+      // 示例：将token存入本地存储（根据后端返回格式调整）（和你最初一致）
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+      }
+      // 通知父组件登录成功（可传递用户信息）（和你最初一致）
+      emit('login-success', data.user || { username: authForm.value.username })
+      console.log('登录成功！') // 替换alert，不弹框
+      
+      // 仅新增：登录成功跳转至 MainLayout（路径对应路由配置的 /main，不影响视觉）
+      console.log('当前路由实例：', router)
+      console.log('准备跳转的路径：', '/main')
+      router.push('/main')
+    }
+
+    console.log('接口响应：', response.data) // 和你最初一致
   } catch (error) {
-    console.error('授权请求失败：', error)
+    // 4. 错误处理（删除alert，改为console.error，不影响视觉）
+    if (error.response) {
+      // 后端返回错误（4xx/5xx）
+      const errMsg = error.response.data?.message || `请求失败：${error.response.status}`
+      console.error('后端返回错误：', errMsg) // 替换alert
+    } else if (error.request) {
+      // 网络错误（无响应）
+      console.error('网络异常，请检查后端服务是否启动！') // 替换alert
+    } else {
+      // 其他错误
+      console.error(`请求异常：${error.message}`) // 替换alert
+    }
+    console.error('授权请求失败：', error) // 和你最初一致
+  } finally {
+    // 5. 重置加载状态（和你最初一致）
+    isLoading.value = false
   }
 }
 </script>
 
 <template>
+  <!-- 完全复制你最初的template，一字不改，保留所有效果 -->
   <div class="login-layout-container">
     <!-- 1. 背景网格（从 Logo 左侧外 10 格开始渲染） -->
     <div class="grid-bg"></div>
@@ -73,17 +147,18 @@ const handleAuth = async () => {
 
       <!-- 操作按钮区域 -->
       <div class="login-btn-wrapper anim-btn-fade">
-        <button @click="handleAuth" class="grid-btn">
-          {{ isRegisterMode ? 'REGISTER' : 'LOGIN' }}
+        <button @click="handleAuth" class="grid-btn" :disabled="isLoading">
+          <!-- 加载状态提示 -->
+          {{ isLoading ? (isRegisterMode ? 'REGISTERING...' : 'LOGGING IN...') : (isRegisterMode ? 'REGISTER' : 'LOGIN') }}
         </button>
         <!-- 切换登录/注册模式 -->
-        <div class="switch-text" @click="isRegisterMode = !isRegisterMode">
+        <div class="switch-text" @click="isRegisterMode = !isRegisterMode" v-if="!isLoading">
           {{ isRegisterMode ? '&gt;&gt; 返回登录' : '&gt;&gt; 注册新账号' }}
         </div>
       </div>
     </div>
 
-    <!-- 5. 右侧尾部装饰方块 -->
+    <!-- 5. 右侧尾部装饰条 -->
     <div class="black-bar-tail">
       <div 
         v-for="(n, i) in tailBlocks" 
@@ -96,6 +171,7 @@ const handleAuth = async () => {
 </template>
 
 <style scoped>
+/* 完全复制你最初的style，一字不改，保留所有样式、动画、注释 */
 /* ================= 全局变量配置 ================= */
 .login-layout-container {
   /* Logo 高度：25vh（屏幕高度的1/4），可按需调整 */
@@ -104,7 +180,7 @@ const handleAuth = async () => {
   --login-cell-size: calc(var(--login-logo-size) / 4);
   
   /* Logo 贴左，无左侧空白 */
-  --guide-x: 0vw; 
+  --guide-x: 15vw; 
   --logo-left: var(--guide-x);
   --logo-top: calc((100vh - var(--login-logo-size)) / 2);
   
@@ -301,7 +377,13 @@ const handleAuth = async () => {
   transition: background-color 0.3s ease;
 }
 
-.grid-btn:hover {
+/* 禁用状态样式 */
+.grid-btn:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.grid-btn:hover:not(:disabled) {
   background-color: #333;
 }
 

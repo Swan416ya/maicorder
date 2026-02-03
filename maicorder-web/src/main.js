@@ -1,6 +1,8 @@
-import './assets/main.css'
-
+// src/main.js
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router' // 导入路由配置
 
-createApp(App).mount('#app')
+const app = createApp(App)
+app.use(router) // 挂载路由
+app.mount('#app')

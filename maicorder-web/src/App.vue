@@ -1,17 +1,18 @@
 <script setup>
-// 导入你实际的登录布局组件（路径完全匹配你的文件结构）
-import LoginLayout from './components/LoginLayout.vue'
+// 删掉原来的import LoginLayout，路由会自动处理组件渲染
+import { useRouter } from 'vue-router'
+const router = useRouter()
 </script>
 
 <template>
   <div id="app">
-    <!-- 渲染登录布局组件 -->
-    <LoginLayout />
+    <!-- 路由出口：路由匹配到的组件会渲染在这里 -->
+    <router-view />
   </div>
 </template>
 
 <style>
-/* 全局基础样式：确保页面无默认边距、溢出隐藏，统一字体 */
+/* 保留你的全局样式，无需修改 */
 * {
   margin: 0;
   padding: 0;
