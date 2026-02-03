@@ -30,11 +30,10 @@ const isLoading = ref(false)
 const tailBlocks = Array.from({ length: 40 })
 const connectorBlocks = Array.from({ length: 15 })
 
-// 登录/注册核心方法（修复：添加请求头、优化错误处理、确保路由跳转）
 const handleAuth = async () => { 
   console.log('===== 按钮点击成功，进入登录方法 =====')
 
-  // 1. 表单基础验证
+  // 表单基础验证
   if (!authForm.value.username || !authForm.value.password) {
     console.warn('用户名和密码不能为空！')
     return
@@ -51,7 +50,7 @@ const handleAuth = async () => {
     axios.defaults.headers.common['Content-Type'] = 'application/json'
     
     if (isRegisterMode.value) {
-      // 注册逻辑（保持不变）
+      // 注册逻辑
       response = await axios.post(`${API_BASE}/register`, {
         username: authForm.value.username,
         password: authForm.value.password,
@@ -61,37 +60,33 @@ const handleAuth = async () => {
       isRegisterMode.value = false
       authForm.value = { username: '', password: '', email: '' }
     } else {
-      // 登录请求：后端返回的是Result对象
-      const response = await axios.post(`${API_BASE}/login`, {
+      // 登录逻辑
+      response = await axios.post(`${API_BASE}/login`, {
         username: authForm.value.username,
         password: authForm.value.password
       })
       
-      // 【关键修复】解析Result结构：response.data是Result对象，result.data才是业务数据
       const result = response.data;
-      
-      // 先判断后端返回的code是否为200（成功）
       if (result.code === 200) {
-        const businessData = result.data; // 这里才是包含token的业务数据
-        // 检查业务数据中是否有token
+        const businessData = result.data;
         if (businessData.token) {
+          // 存储token和用户信息
           localStorage.setItem('token', businessData.token);
+          localStorage.setItem('currentUser', JSON.stringify(businessData.user)); // 关键行
           axios.defaults.headers.common['Authorization'] = `Bearer ${businessData.token}`;
-          emit('login-success', businessData.user || { username: authForm.value.username });
+          emit('login-success', businessData.user);
           console.log('登录成功！跳转至主页面');
-          await router.push('/main'); // 成功跳转
+          await router.push('/main');
         } else {
-          console.error('登录失败：后端业务数据中未返回token');
+          console.error('登录失败：后端未返回token');
           alert('登录失败：系统异常');
         }
       } else {
-        // 后端返回业务错误（比如用户名/密码错误）
         console.error('登录失败：', result.message);
         alert(result.message || '登录失败');
       }
     }
   } catch (error) {
-    // 【关键修复】请求失败（如后端500）时，不跳转，提示错误
     let errMsg = '操作失败，请稍后重试'
     if (error.response) {
       errMsg = error.response.data?.message || `请求失败：${error.response.status}`
@@ -101,7 +96,7 @@ const handleAuth = async () => {
       errMsg = `请求异常：${error.message}`
     }
     console.error('授权请求失败：', errMsg)
-    alert(errMsg) // 提示用户失败原因
+    alert(errMsg)
   } finally {
     isLoading.value = false
   }

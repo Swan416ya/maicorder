@@ -1,5 +1,6 @@
 package com.maicorder.controller;
 
+import com.maicorder.common.Result;
 import com.maicorder.entity.Arcade;
 import com.maicorder.mapper.ArcadeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,20 +10,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/arcades")
-@CrossOrigin(origins = "*")
 public class ArcadeController {
 
     @Autowired
-    private ArcadeMapper arcadeMapper; // 名字变了
+    private ArcadeMapper arcadeMapper;
 
     @GetMapping
-    public List<Arcade> list() {
-        return arcadeMapper.selectList(null); // selectList(null) 表示查所有
+    public Result<List<Arcade>> list() {
+        List<Arcade> arcadeList = arcadeMapper.selectList(null);
+        return Result.success(arcadeList);
     }
 
     @PostMapping
-    public Arcade create(@RequestBody Arcade arcade) {
+    public Result<Arcade> create(@RequestBody Arcade arcade) {
         arcadeMapper.insert(arcade);
-        return arcade;
+        return Result.success(arcade);
     }
 }

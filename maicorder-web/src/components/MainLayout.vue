@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-// 接口基础路径：生产环境/开发环境区分
-const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
+// 接口基础路径：统一用相对路径（配合Vite代理解决跨域）
+const API_BASE = '/api'
 
 // 初始化axios请求头（携带登录后的token）
 const token = localStorage.getItem('token')
@@ -12,8 +12,12 @@ if (token) {
 }
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 
-// 接收父组件传来的当前用户
+// 接收父组件传来的当前用户 + 从localStorage兜底（双重保障，避免空值）
 const props = defineProps(['currentUser'])
+const currentUser = ref(
+  props.currentUser || JSON.parse(localStorage.getItem('currentUser')) || {}
+)
+
 // 定义退出事件
 const emit = defineEmits(['logout'])
 
@@ -48,11 +52,13 @@ const form = ref({
   gameSessions: [] 
 })
 
-// 获取机厅列表
+// 获取机厅列表（修复：适配后端Result统一返回结构）
 const fetchArcades = async () => {
   try {
     const res = await axios.get(`${API_BASE}/arcades`)
-    arcades.value = res.data.filter(a => a.name)
+    // 核心修复：从Result对象的data字段取机厅数组，兜底空数组
+    const resultData = res.data?.data || []
+    arcades.value = resultData.filter(a => a.name)
   } catch (e) { 
     console.error('获取机厅列表失败：', e)
     alert('获取机厅列表失败，请检查登录状态或网络')
@@ -65,7 +71,7 @@ const createArcade = async () => {
   try {
     await axios.post(`${API_BASE}/arcades`, {name: newArcadeName.value.trim()})
     newArcadeName.value = ''
-    fetchArcades()
+    fetchArcades() // 重新拉取列表
     alert('机厅创建成功！')
   } catch(e) { 
     console.error('创建机厅失败：', e)
@@ -79,7 +85,7 @@ const addRecordToSession = (idx) => form.value.gameSessions[idx].records.push({ 
 const removeSession = (idx) => form.value.gameSessions.splice(idx, 1)
 const removeRecord = (sIdx, rIdx) => form.value.gameSessions[sIdx].records.splice(rIdx, 1)
 
-// 提交出勤记录
+// 提交出勤记录（增加userId空值保护）
 const submitCheckIn = async () => {
   // 基础验证
   if (!form.value.arcadeId) return alert("请选择机厅！")
@@ -87,7 +93,8 @@ const submitCheckIn = async () => {
   
   try {
     const payload = {
-      userId: props.currentUser.id,
+      // 空值保护：避免currentUser.id不存在时报错
+      userId: currentUser.value.id || '',
       arcade: { id: form.value.arcadeId },
       checkInDate: form.value.checkInDate,
       coinCost: form.value.coinCost || 0, 
@@ -103,7 +110,7 @@ const submitCheckIn = async () => {
     }
     await axios.post(`${API_BASE}/checkins`, payload)
     alert("出勤记录保存成功！")
-    // 重置表单（完整重置）
+    // 重置表单
     form.value = {
       arcadeId: null,
       checkInDate: getTodayString(),
@@ -120,6 +127,14 @@ const submitCheckIn = async () => {
   }
 }
 
+// 完善退出登录逻辑（清空本地存储+触发事件+跳转）
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('currentUser')
+  emit('logout')
+  window.location.href = '/login'
+}
+
 // 页面挂载时加载机厅列表
 onMounted(() => {
   fetchArcades()
@@ -130,13 +145,14 @@ onMounted(() => {
   <div class="main-app-container">
     <div class="main-app-content">
       
-      <!-- 顶部栏 -->
+      <!-- 顶部栏：空值保护 + 修复退出登录按钮 -->
       <div class="top-bar">
         <div class="user-info">
-          <div class="avatar-placeholder">{{ currentUser.username[0].toUpperCase() }}</div>
-          <span>{{ currentUser.username }}</span>
+          <!-- 可选链+默认值，避免undefined报错 -->
+          <div class="avatar-placeholder">{{ currentUser?.username?.[0]?.toUpperCase() || 'U' }}</div>
+          <span>{{ currentUser?.username || '未知用户' }}</span>
         </div>
-        <button @click="$emit('logout')" class="mini-btn">LOGOUT</button>
+        <button @click="handleLogout" class="mini-btn">LOGOUT</button>
       </div>
 
       <h1 class="page-title">RECORD YOUR PLAY</h1>

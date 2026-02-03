@@ -28,8 +28,12 @@ CREATE TABLE `arcade` (
   `latitude` double DEFAULT NULL,
   `longitude` double DEFAULT NULL,
   `name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `province` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `city` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `district` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=6409 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,7 +42,7 @@ CREATE TABLE `arcade` (
 
 LOCK TABLES `arcade` WRITE;
 /*!40000 ALTER TABLE `arcade` DISABLE KEYS */;
-INSERT INTO `arcade` VALUES (1,NULL,NULL,NULL,'广州燕塘宴窝'),(2,NULL,NULL,NULL,NULL);
+INSERT INTO `arcade` VALUES (4412,NULL,NULL,NULL,'宴窝 | Banquet','广东省','广州市','天河区'),(5281,NULL,NULL,NULL,'猫窝（东圃）','广东省','广州市','天河区'),(6376,NULL,NULL,NULL,'WIN窝 | 赢窝','广东省','广州市','天河区'),(6408,NULL,NULL,NULL,'未来之影广州天河天娱广场店','广东省','广州市','天河区');
 /*!40000 ALTER TABLE `arcade` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,6 +62,7 @@ CREATE TABLE `check_in` (
   `food_cost` double DEFAULT '0',
   `water_cost` double DEFAULT '0',
   `transport_cost` double DEFAULT '0',
+  `user_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -68,7 +73,6 @@ CREATE TABLE `check_in` (
 
 LOCK TABLES `check_in` WRITE;
 /*!40000 ALTER TABLE `check_in` DISABLE KEYS */;
-INSERT INTO `check_in` VALUES (1,1,'666','2026-01-24',0,0,0,0);
 /*!40000 ALTER TABLE `check_in` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,7 +99,6 @@ CREATE TABLE `game_session` (
 
 LOCK TABLES `game_session` WRITE;
 /*!40000 ALTER TABLE `game_session` DISABLE KEYS */;
-INSERT INTO `game_session` VALUES (1,1,'MAIMAI_DX',5,'12356');
 /*!40000 ALTER TABLE `game_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,7 +126,6 @@ CREATE TABLE `play_record` (
 
 LOCK TABLES `play_record` WRITE;
 /*!40000 ALTER TABLE `play_record` DISABLE KEYS */;
-INSERT INTO `play_record` VALUES (1,1,'QuiQ','100.6285','鸟+',NULL);
 /*!40000 ALTER TABLE `play_record` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -153,6 +155,34 @@ LOCK TABLES `restaurant` WRITE;
 /*!40000 ALTER TABLE `restaurant` DISABLE KEYS */;
 /*!40000 ALTER TABLE `restaurant` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `sys_user`
+--
+
+DROP TABLE IF EXISTS `sys_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sys_user` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
+  `password` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT '密码(加密后)',
+  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '邮箱',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_user`
+--
+
+LOCK TABLES `sys_user` WRITE;
+/*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
+INSERT INTO `sys_user` VALUES (1,'Swan416','b51e8dbebd4ba8a8f342190a4b9f08d7','3447049424@qq.com','2026-02-02 16:42:02'),(2,'Swan416ya','3c55d1838c464bc6427a664096e043a2','1491229171@qq.com','2026-02-03 17:16:04');
+/*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -163,4 +193,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-01 13:31:02
+-- Dump completed on 2026-02-03 17:31:33
