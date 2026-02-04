@@ -33,6 +33,9 @@
         <span class="btn-text" v-if="!isDialogOpen">勤了</span>
       </div>
 
+      <!-- 时间显示 -->
+      <TimeBoard v-if="!isDialogOpen" />
+
       <div class="view-records-link" @click="handleViewRecords" v-if="!isDialogOpen">
         我的记录
       </div>
@@ -56,6 +59,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CheckInDialog from './CheckInDialog.vue'
+import TimeBoard from './timeBoard.vue'
 
 const router = useRouter()
 
