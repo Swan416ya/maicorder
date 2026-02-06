@@ -1,4 +1,3 @@
-<!-- MainLayout.vue -->
 <template>
   <div class="main-page-container">
     <!-- 顶部标题 -->
@@ -15,7 +14,7 @@
         @click="handleCheckIn"
         @click.stop="preventMaskClose"
       >
-        <!-- 动态内接长方形容器（勾股定理计算尺寸 + 四周渐变羽化 + 上下留白） -->
+        <!-- 动态内接长方形容器 -->
         <div 
           class="dialog-content-wrapper"
           v-if="isDialogOpen"
@@ -33,8 +32,7 @@
         <span class="btn-text" v-if="!isDialogOpen">勤了</span>
       </div>
 
-      <!-- 时间显示 -->
-      <TimeBoard v-if="!isDialogOpen" />
+      <!-- 已移除 TimeBoard 组件 -->
 
       <div class="view-records-link" @click="handleViewRecords" v-if="!isDialogOpen">
         我的记录
@@ -59,7 +57,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CheckInDialog from './CheckInDialog.vue'
-import TimeBoard from './timeBoard.vue'
+// 已移除 TimeBoard 引入
 
 const router = useRouter()
 
@@ -70,7 +68,7 @@ const userName = ref('未知用户')
 const isDialogOpen = ref(false)
 const dialogSize = ref(200)
 const maxDialogSize = ref(0)
-// 动态内接长方形尺寸（勾股定理计算）
+// 动态内接长方形尺寸
 const contentWidth = ref(0)
 const contentHeight = ref(0)
 
@@ -98,32 +96,52 @@ const initUserInfo = () => {
   }
 }
 
-// 计算弹窗最大尺寸 + 动态内接长方形尺寸（核心逻辑：改为90%基数）
+// 计算弹窗最大尺寸 + 动态内接长方形尺寸
 const calculateMaxDialogSize = () => {
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
   const longSide = Math.max(windowWidth, windowHeight)
+  
+  // 设置圆的最大直径（屏幕长边的 75%）
   maxDialogSize.value = Math.floor(longSide * 0.75)
-  if (dialogSize.value > maxDialogSize.value) {
+  
+  // 如果弹窗是打开状态，保持尺寸同步
+  if (isDialogOpen.value) {
     dialogSize.value = maxDialogSize.value
   }
 
-  // ########## 修改：基数改为圆直径的90% ##########
-  const diameter = dialogSize.value * 0.9 // 对角线 = 圆直径 × 90%
-  const screenRatioBase = 0.9 // 宽/高也取90%，符合需求
+  // --- 核心修改区域 ---
+  
+  // 1. 扩大有效直径
+  // 原来是 * 0.9 (留10%边距)，改为 * 0.98 (只留2%边距，几乎贴边)
+  // 注意：这里使用 maxDialogSize 计算，确保计算的是展开后的大小
+  const diameter = maxDialogSize.value * 0.98 
+
+  // 2. 宽度基准
+  // 保持 0.9，防止宽度太宽导致左右没空隙不好看
+  const screenRatioBase = 0.9 
 
   if (windowWidth > windowHeight) {
-    // 横屏：高 = 屏幕高度 × 90%，宽 = √(对角线² - 高²)
-    contentHeight.value = Math.floor(windowHeight * screenRatioBase)
+    // 横屏逻辑
+    let height = windowHeight * screenRatioBase
+    // 保护逻辑：如果算出的高比直径还大，就限制为直径
+    if (height > diameter) height = diameter
+    
+    contentHeight.value = Math.floor(height)
     contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
   } else {
-    // 竖屏：宽 = 屏幕宽度 × 90%，高 = √(对角线² - 宽²)
-    contentWidth.value = Math.floor(windowWidth * screenRatioBase)
+    // 竖屏逻辑（手机主要是这里）
+    let width = windowWidth * screenRatioBase
+    // 保护逻辑
+    if (width > diameter) width = diameter
+    
+    contentWidth.value = Math.floor(width)
+    // 勾股定理算出最大高度：h = √(d² - w²)
     contentHeight.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentWidth.value, 2)))
   }
 
-  // ########## 新增：上下留白处理（额外减少高度，预留留白空间） ##########
-  contentHeight.value = Math.floor(contentHeight.value * 0.9)
+  // 3. 【关键】移除了原来最后的 contentHeight * 0.9
+  // 这样高度就会完全延伸到计算出的内接边界，不再有人为的上下留白
 }
 
 // 窗口大小变化时重新计算
@@ -152,7 +170,6 @@ const handleCheckIn = () => {
   }
 }
 
-// 防止事件冒泡
 const preventMaskClose = () => {}
 
 // 查看我的记录
@@ -170,6 +187,7 @@ const handleLogout = () => {
 </script>
 
 <style scoped>
+/* 样式保持不变，核心布局逻辑未变 */
 .main-page-container {
   width: 100vw;
   height: 100vh;
@@ -205,17 +223,15 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 20px; /* 保持间距，移除时钟后按钮和下方链接会靠得更近一点，视觉上更紧凑 */
   z-index: 2;
 }
 
-/* 圆形按钮/弹窗容器：去掉黑色边框 */
 .check-btn-container {
   width: 200px;
   height: 200px;
   border-radius: 50%;
   background-color: #000;
-  /* 修改：删除黑色边框属性 */
   color: #fff;
   font-size: 2rem;
   font-weight: 600;
@@ -228,52 +244,86 @@ const handleLogout = () => {
   position: relative;
 }
 
-/* 弹窗展开状态：去掉黑色边框 */
 .check-btn-container.dialog-expanded {
   background-color: #fff;
-  /* 修改：删除边框宽度属性 */
   cursor: default;
   width: v-bind(dialogSize + 'px');
   height: v-bind(dialogSize + 'px');
 }
 
-/* 动态内接长方形容器：四周渐变羽化 + 上下留白 */
+/* 动态内接长方形容器 */
 .dialog-content-wrapper {
-  /* 布局：居中对齐内部内容，上下留白 */
+  /* 布局 */
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 30px 16px; /* 修改：上下30px留白，左右16px内边距 */
   box-sizing: border-box;
-  /* 修改：四周渐变消失的羽化效果（mask实现） */
+  
+  /* 尺寸 */
+  width: 100%;
+  height: 100%;
+
+  /* 
+    【关键调整】：
+    上下 Padding 改为 30px。
+    如果 Padding 太大（比如 50px），而渐变也是 50px，
+    那渐变就刚好发生在空白处，文字出来时已经是黑色的了，就没有渐变感。
+  */
+  padding: 30px 10px;
+
+  /* 滚动设置 */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* 
+    【核心渐变逻辑】：
+    0% - 5%:   完全透明（纯白区域，保证边缘绝对干净）
+    5% - 20%:  从透明渐变到显示（羽化区）
+    20% - 80%: 内容完全可见
+    80% - 95%: 从显示渐变到透明（羽化区）
+    95% - 100%: 完全透明（纯白区域）
+  */
   -webkit-mask-image: linear-gradient(
-    to top, transparent 0%, rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%, transparent 100%
-  ), linear-gradient(
-    to left, transparent 0%, rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%, transparent 100%
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 5%, 
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0) 95%,
+    rgba(0, 0, 0, 0) 100%
   );
+  
   mask-image: linear-gradient(
-    to top, transparent 0%, rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%, transparent 100%
-  ), linear-gradient(
-    to left, transparent 0%, rgba(0, 0, 0, 1) 15%,
-    rgba(0, 0, 0, 1) 85%, transparent 100%
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 5%, 
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0) 95%,
+    rgba(0, 0, 0, 0) 100%
   );
-  /* 溢出处理：内容超出时可滚动 */
-  overflow: hidden;
-  /* 过渡：跟随尺寸变化平滑过渡 */
+
+  /* 确保没有其他遮罩合成模式干扰 */
+  -webkit-mask-composite: source-over;
+  mask-composite: add;
+
+  /* 过渡 */
   transition: all 0.5s ease-in-out;
-  /* 圆角过渡 */
-  border-radius: 16px;
 }
 
-/* 按钮默认文字 */
+/* 隐藏滚动条 */
+.dialog-content-wrapper::-webkit-scrollbar {
+  display: none; 
+}
+.dialog-content-wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none; 
+}
+
 .btn-text {
   transition: all 0.5s ease;
 }
 
-/* 遮罩层 */
 .dialog-mask {
   position: fixed;
   top: 0;
