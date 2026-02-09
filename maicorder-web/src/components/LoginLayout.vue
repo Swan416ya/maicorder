@@ -129,6 +129,7 @@ const handleAuth = async () => {
       if (result.code === 200 && result.data.token) {
         localStorage.setItem('token', result.data.token);
         localStorage.setItem('currentUser', JSON.stringify(result.data.user));
+        localStorage.setItem('userId', result.data.user.id);
         axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
         emit('login-success', result.data.user);
         await router.push('/main');

@@ -54,8 +54,8 @@
           <div class="total-cost">
             Total: ¥{{ calculateTotal(checkIn) }}
           </div>
-          <div v-if="checkIn.comment" class="comment-box">
-            {{ checkIn.comment }}
+          <div >
+            {{ checkIn.comment==''?'用户无评论':checkIn.comment}}
           </div>
         </div>
         <template #actions>
@@ -117,7 +117,8 @@ const viewCheckInDetail = (checkInId) => {
 const fetchCheckIns = async () => {
   try {
     const token = localStorage.getItem('token')
-    const userId = localStorage.getItem('userId') || 1 // 假设用户ID为1，实际应该从登录信息中获取
+    const userId = localStorage.getItem('userId')
+    console.log('userId:', userId)
     
     if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     
@@ -127,7 +128,7 @@ const fetchCheckIns = async () => {
     
     // 根据后端返回结构调整
     if (res.data.code === 200) {
-      checkIns.value = res.data|| []
+      checkIns.value = res.data.data || []
     } else {
       console.error('Failed to load check-ins:', res.data.message)
     }
@@ -218,6 +219,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+
 }
 
 .record-card {
