@@ -15,83 +15,55 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-else-if="records.length === 0" class="empty-state">
+    <div v-else-if="checkIns.length === 0" class="empty-state">
       <div class="empty-box">
-        NO RECORDS FOUND
+        NO CHECK-IN RECORDS FOUND
       </div>
     </div>
 
-    <!-- 记录列表 -->
+    <!-- 签到记录列表 -->
     <div v-else class="records-list">
-      <div v-for="record in records" :key="record.id" class="record-card">
-        
-        <!-- 卡片头部：日期与机厅 -->
-        <div class="card-header">
-          <span class="record-date">{{ formatDate(record.checkInDate) }}</span>
-          <!-- 如果后端返回了 arcadeName 直接用，否则显示 ID -->
-          <span class="record-arcade">{{ record.arcadeName || 'UNKNOWN ARCADE' }}</span>
-        </div>
-
-        <div class="divider-thin"></div>
-
-        <!-- 开销统计 -->
-        <div class="cost-row">
-          <div class="cost-item" v-if="record.cost?.coin > 0">
-            <img :src="coinImg" class="cost-icon-small" />
-            <span>{{ record.cost.coin }}</span>
-          </div>
-          <div class="cost-item" v-if="record.cost?.food > 0">
-            <img :src="foodImg" class="cost-icon-small" />
-            <span>{{ record.cost.food }}</span>
-          </div>
-          <div class="cost-item" v-if="record.cost?.water > 0">
-            <img :src="drinkImg" class="cost-icon-small" />
-            <span>{{ record.cost.water }}</span>
-          </div>
-          <div class="cost-item" v-if="record.cost?.transport > 0">
-            <img :src="trafficImg" class="cost-icon-small" />
-            <span>{{ record.cost.transport }}</span>
-          </div>
-          <!-- 如果全是0 -->
-          <span v-if="isTotalZero(record.cost)" class="no-cost">NO COST</span>
-        </div>
-
-        <!-- 备注 -->
-        <div class="comment-box" v-if="record.comment">
-          "{{ record.comment }}"
-        </div>
-
-        <!-- 游戏会话列表 -->
-        <div class="sessions-list" v-if="record.gameSessions && record.gameSessions.length > 0">
-          <div v-for="(session, idx) in record.gameSessions" :key="idx" class="session-item">
-            
-            <!-- 游戏头部：Logo + 概览 -->
-            <div class="session-header">
-              <div class="logo-wrapper">
-                <img :src="getGameLogo(session.gameType)" class="game-logo-small" />
-              </div>
-              <div class="session-meta">
-                <span v-if="session.pcCount">PC: {{ session.pcCount }}</span>
-                <span v-if="session.currentRating">RT: {{ session.currentRating }}</span>
-              </div>
+      <PurpleCard 
+        v-for="checkIn in checkIns" 
+        :key="checkIn.id"
+        variant="filled"
+        :title="formatDate(checkIn.checkInTime)"
+        :subTitle="`Arcade ID: ${checkIn.arcadeId}`"
+        clickable
+        @click="viewCheckInDetail(checkIn.id)"
+      >
+        <div class="checkin-details">
+          <div class="cost-row">
+            <div class="cost-item">
+              <img :src="coinImg" alt="Coin" class="cost-icon-small" />
+              <span>¥{{ checkIn.coinCost || 0 }}</span>
             </div>
-
-            <!-- 战绩详情表格 -->
-            <div class="records-table" v-if="session.records && session.records.length > 0">
-              <div v-for="(play, pIdx) in session.records" :key="pIdx" class="play-row">
-                <span class="play-song">{{ play.songName }}</span>
-                <span class="play-score">{{ play.score }}</span>
-                <span class="play-lamp" v-if="play.clearStatus">{{ play.clearStatus }}</span>
-              </div>
+            <div class="cost-item">
+              <img :src="foodImg" alt="Food" class="cost-icon-small" />
+              <span>¥{{ checkIn.foodCost || 0 }}</span>
+            </div>
+            <div class="cost-item">
+              <img :src="drinkImg" alt="Drink" class="cost-icon-small" />
+              <span>¥{{ checkIn.waterCost || 0 }}</span>
+            </div>
+            <div class="cost-item">
+              <img :src="trafficImg" alt="Transport" class="cost-icon-small" />
+              <span>¥{{ checkIn.transportCost || 0 }}</span>
             </div>
           </div>
+          <div class="total-cost">
+            Total: ¥{{ calculateTotal(checkIn) }}
+          </div>
+          <div v-if="checkIn.comment" class="comment-box">
+            {{ checkIn.comment }}
+          </div>
         </div>
-
-      </div>
+        <template #actions>
+          <button class="action-btn">View Details</button>
+        </template>
+      </PurpleCard>
     </div>
     
-    <!-- 底部占位，防止内容被遮挡 -->
-    <div class="footer-spacer"></div>
   </div>
 </template>
 
@@ -99,6 +71,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import PurpleCard from '@/components/PurpleCard.vue'
 
 // 引入图片资源
 import coinImg from '@/assets/coin.png'
@@ -111,7 +84,7 @@ import iidxImg from '@/assets/games/iidx.png'
 import ongekiImg from '@/assets/games/ongeki.png'
 
 const router = useRouter()
-const records = ref([])
+const checkIns = ref([])
 const loading = ref(true)
 
 // 游戏配置映射
@@ -129,35 +102,44 @@ const getGameLogo = (type) => {
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
   // 简单格式化 yyyy-mm-dd
-  return dateStr.split('T')[0]
+  return dateStr
 }
 
-const isTotalZero = (cost) => {
-  if (!cost) return true
-  return (cost.coin || 0) + (cost.food || 0) + (cost.water || 0) + (cost.transport || 0) === 0
+const calculateTotal = (checkIn) => {
+  return (checkIn.coinCost || 0) + (checkIn.foodCost || 0) + (checkIn.waterCost || 0) + (checkIn.transportCost || 0)
 }
 
-const fetchRecords = async () => {
+const viewCheckInDetail = (checkInId) => {
+  // 跳转到签到详情页
+  router.push(`/checkin/detail/${checkInId}`)
+}
+
+const fetchCheckIns = async () => {
   try {
     const token = localStorage.getItem('token')
+    const userId = localStorage.getItem('userId') || 1 // 假设用户ID为1，实际应该从登录信息中获取
+    
     if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     
-    // 假设你的后端获取列表接口是 GET /api/checkins
-    const res = await axios.get('/api/checkins')
-    // 根据实际后端返回结构调整，这里假设数据在 data.data 或 data 中
-    records.value = res.data?.data || res.data || []
+    // 使用后端提供的接口获取签到记录
+    const res = await axios.get(`/api/records/checkins/${userId}`)
+    console.log('签到记录:', res.data)
     
-    // 如果需要按日期倒序
-    records.value.sort((a, b) => new Date(b.checkInDate) - new Date(a.checkInDate))
+    // 根据后端返回结构调整
+    if (res.data.code === 200) {
+      checkIns.value = res.data|| []
+    } else {
+      console.error('Failed to load check-ins:', res.data.message)
+    }
   } catch (error) {
-    console.error('Failed to load records:', error)
+    console.error('Failed to load check-ins:', error)
   } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
-  fetchRecords()
+  fetchCheckIns()
 })
 </script>
 
@@ -372,5 +354,31 @@ onMounted(() => {
 
 .footer-spacer {
   height: 40px;
+}
+
+/* 签到详情样式 */
+.checkin-details {
+  line-height: 1.6;
+}
+
+.total-cost {
+  font-weight: bold;
+  margin-top: 10px;
+  color: #6750a4;
+}
+
+.action-btn {
+  border: none;
+  background: transparent;
+  color: #6750a4;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.action-btn:hover {
+  background: rgba(103, 80, 164, 0.1);
 }
 </style>
