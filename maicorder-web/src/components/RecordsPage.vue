@@ -22,6 +22,7 @@
     </div>
 
     <!-- 签到记录列表 -->
+     <!-- TODO: 滚动条优化 -->
     <div v-else class="records-list">
       <PurpleCard 
         v-for="checkIn in checkIns" 
@@ -63,6 +64,7 @@
         </template>
       </PurpleCard>
     </div>
+    
     
   </div>
 </template>
