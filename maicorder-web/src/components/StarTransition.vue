@@ -1,32 +1,20 @@
+<!-- StarTransition.vue -->
 <template>
-  <div class="md-container">
-    <!-- 背景扩散层 (默认与背景同色，激活时变为深色并铺满) -->
-    <div :class="['reveal-overlay', { 'is-active': isExpanding }]"></div>
+  <div v-if="!isDestroyed" class="transition-overlay">
+    <!-- 背景扩张圆：初始透明度0，扩张时变为全屏 -->
+    <div 
+      :class="['expand-circle', { 'is-expanding': isExpanding }]" 
+      :style="{ backgroundColor: bgColor }"
+    />
 
-    <!-- 中心加载区域 -->
+    <!-- 中心星形加载器 -->
     <div :class="['loader-content', { 'fade-out': isExpanding }]">
-      <div class="shape-wrapper">
-        <!-- 外部浅色圆圈 (对应图2) -->
-        <div class="outer-ring"></div>
-        
-        <!-- 内部 MD3 圆角多边形 (对应图1) -->
-        <svg class="md3-polygon" viewBox="0 0 100 100">
-          <!-- 使用路径绘制圆角五边形 -->
-          <path 
-            d="M50 5 
-               L85 30 
-               L75 75 
-               L25 75 
-               L15 30 
-               Z" 
-            stroke-linejoin="round" 
-            stroke-width="12" 
-            stroke="#4F378B" 
-            fill="#4F378B"
-          />
+      <div class="md3-star">
+        <svg viewBox="0 0 100 100">
+          <path d="M50 0 L61 39 L100 50 L61 61 L50 100 L39 61 L0 50 L39 39 Z" fill="#4F378B" />
         </svg>
       </div>
-      <p class="label">正在加载</p>
+      <p>正在初始化...</p>
     </div>
   </div>
 </template>
@@ -34,55 +22,57 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 
+const props = defineProps({
+  bgColor: { type: String, default: '#F3EDF7' } // 与底层的 BackGround 背景色保持一致
+});
+
+const emit = defineEmits(['finished']);
 const isExpanding = ref(false);
+const isDestroyed = ref(false);
 
 onMounted(() => {
-  // 1. 等待 1 秒开始扩散
+  // 1. 加载 1 秒
   setTimeout(() => {
     isExpanding.value = true;
 
-    // 2. 动画结束后跳转页面 (这里用 console 模拟)
+    // 2. 动画时间 0.8s 结束后，通知父组件销毁自己
     setTimeout(() => {
-      console.log("执行跳转...");
-      // router.push('/home');
-    }, 800); // 对应 CSS transition 时间
+      isDestroyed.value = true;
+      emit('finished');
+    }, 800); 
   }, 1000);
 });
 </script>
 
 <style scoped>
-/* 基础容器 */
-.md-container {
+.transition-overlay {
   position: fixed;
   inset: 0;
+  z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #F3EDF7; /* MD3 浅紫色背景 */
+  background-color: #EADDFF; /* 初始加载时的背景色 */
   overflow: hidden;
 }
 
-/* 核心：背景扩散动画 */
-.reveal-overlay {
+.expand-circle {
   position: absolute;
-  width: 100vmax; /* 确保圆够大 */
-  height: 100vmax;
-  background-color: #4F378B; /* 扩散后的颜色 */
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   transform: scale(0);
+  background-color: #F3EDF7; /* 这里设为底层 BackGround 的背景色 */
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
 }
 
-.reveal-overlay.is-active {
-  transform: scale(2); /* 扩散铺满全屏 */
+.expand-circle.is-expanding {
+  transform: scale(500); /* 覆盖整个屏幕 */
 }
 
-/* 加载内容层 */
 .loader-content {
   position: relative;
   z-index: 2;
-  text-align: center;
   transition: opacity 0.4s ease;
 }
 
@@ -90,48 +80,14 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* 形状组合 */
-.shape-wrapper {
-  position: relative;
+.md3-star {
   width: 80px;
   height: 80px;
-  margin-bottom: 20px;
+  animation: rotate 4s infinite linear;
 }
 
-/* 外圈圆环 */
-.outer-ring {
-  position: absolute;
-  inset: -10px;
-  border-radius: 50%;
-  background-color: #D0BCFF; /* 图2中的淡紫色圆圈 */
-  opacity: 0.6;
-}
-
-/* MD3 多边形 SVG */
-.md3-polygon {
-  width: 100%;
-  height: 100%;
-  /* 旋转动画 */
-  animation: rotate-breathe 3s infinite ease-in-out;
-}
-
-.label {
-  color: #4F378B;
-  font-family: sans-serif;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-/* 形状旋转和微弱呼吸动画 */
-@keyframes rotate-breathe {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-  50% {
-    transform: rotate(180deg) scale(1.1);
-  }
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
