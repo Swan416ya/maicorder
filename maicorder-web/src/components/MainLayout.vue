@@ -34,7 +34,7 @@
 
       <!-- 已移除 TimeBoard 组件 -->
 
-      <div>
+      <div class="btn">
         <PurpleFab 
         label="查看记录" 
         variant="surface"
@@ -213,6 +213,13 @@ const handleLogout = () => {
 </script>
 
 <style scoped>
+
+.btn {
+  margin-top: 30px;
+}
+
+
+
 /* 样式保持不变，核心布局逻辑未变 */
 .main-page-container {
   width: 100vw;
