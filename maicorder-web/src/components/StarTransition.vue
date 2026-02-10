@@ -14,7 +14,7 @@
           <path d="M50 0 L61 39 L100 50 L61 61 L50 100 L39 61 L0 50 L39 39 Z" fill="#4F378B" />
         </svg>
       </div>
-      <p>正在初始化...</p>
+      <p>qwq加载中......</p>
     </div>
   </div>
 </template>

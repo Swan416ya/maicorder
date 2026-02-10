@@ -19,17 +19,17 @@
           <template #default="{ item }">
             <PurpleCard 
               variant="elevated" 
-              :title="item.ToolName" 
+              :title="item.date" 
               :subTitle="item.location"
               clickable
             >
               <div class="card-inner">
                 <div class="stats-row">
-                  <span>可用状态 {{ item.status }}</span>
-                  <!-- <span>🍱 ¥{{ item.meal }}</span> -->
+                  <span>🪙 {{ item.coins }}</span>
+                  <span>🍱 ¥{{ item.meal }}</span>
                 </div>
                 <div class="card-footer">
-                  <span class="total">使用人数: {{ item.userCount }}</span>
+                  <span class="total">Total: ¥{{ item.coins + item.meal }}</span>
                   <button class="detail-btn">DETAIL</button>
                 </div>
               </div>
@@ -44,20 +44,6 @@
         </CardList>
 
       </main>
-
-      <PurpleFab 
-        label="返回" 
-        variant="surface"
-        fixed
-        :extended="isFabExtended"
-        @click="backhome"
-      >
-        <!-- 自定义图标插槽 (可选，默认是加号) -->
-        <template #icon>
-           <img :src="logoutIcon" width="24" height="24" />
-        </template>
-      </PurpleFab>
-
     </div>
   </div>
 </template>
@@ -68,30 +54,20 @@ import StarTransition from '@/components/StarTransition.vue';
 import BackGround from '@/components/BackGround.vue';
 import CardList from '@/components/CardList.vue';
 import PurpleCard from '@/components/PurpleCard.vue';
-import PurpleFab from '@/components/PurpleFab.vue';
-import logoutIcon from '@/assets/logout.svg';
-import router from '@/router/index.js';
-
-const isFabExtended = ref(true);
 
 const appLoading = ref(true);
 const dataLoading = ref(true);
 const checkIns = ref([]);
 
-
-const backhome = () => {
-    alert("返回")
-    router.push('/')
-}
-
+const goBack = () => console.log("返回");
 
 // 模拟获取数据
 onMounted(() => {
   setTimeout(() => {
     checkIns.value = [
-      { id: 1, ToolName: '舞萌b50', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 2, ToolName: '中二b45', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 3, ToolName: '歌曲查询', location: 'TODO简介', status: '不可用',userCount:0 },
+      { id: 1, date: '2023-11-01', location: '秋叶原 GIGO', coins: 100, meal: 50 },
+      { id: 2, date: '2023-10-30', location: '新宿 Taito', coins: 40, meal: 20 },
+      { id: 3, date: '2023-10-25', location: '池袋 Round1', coins: 80, meal: 0 },
     ];
     dataLoading.value = false;
   }, 2000);
