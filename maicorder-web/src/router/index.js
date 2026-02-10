@@ -4,6 +4,7 @@ import MainLayout from '@/components/MainLayout.vue'
 // 假设你的记录页组件是这个名字，请确保文件存在
 import RecordsPage from '@/components/RecordsPage.vue' 
 import MoreToolPage from '@/components/moreToolPage.vue'
+// import CardListExample from '@/components/CardListExample.vue'
 
 
 
@@ -37,7 +38,13 @@ const routes = [
     name: 'MoreToolPage',
     component: MoreToolPage,
     meta: { requiresAuth: true }
-  }
+  },
+  // {
+  //   path: '/test',
+  //   name: 'Test',
+  //   component: CardListExample,
+  //   meta: { requiresAuth: true }
+  // },
 ]
 
 const router = createRouter({
