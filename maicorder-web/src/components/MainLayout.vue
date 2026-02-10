@@ -38,6 +38,7 @@
 
       <div class="btn">
         <PurpleFab 
+        v-if = "!isDialogOpen"
         label="查看记录" 
         variant="surface"
         :extended="isFabExtended"

@@ -1,4 +1,5 @@
 <template>
+  <BackGround>
   <div class="records-page-container">
     
     <!-- 1. 固定顶部区域 (Header + Divider) -->
@@ -61,12 +62,9 @@
             Total: ¥{{ calculateTotal(checkIn) }}
           </div>
           <div >
-            {{ checkIn.comment==''?'用户无评论':checkIn.comment}}
+            {{"Note: " + (checkIn.comment==''?'用户无评论':checkIn.comment)}}
           </div>
         </div>
-        <template #actions>
-          <button class="action-btn">View Details</button>
-        </template>
       </PurpleCard>
         
         <!-- 底部垫片，防止最后一个卡片被遮挡 -->
@@ -75,6 +73,7 @@
       
     </div>
   </div>
+  </BackGround>
 </template>
 
 <script setup>
@@ -82,6 +81,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import PurpleCard from '@/components/PurpleCard.vue'
+
 
 // 引入图片资源
 import coinImg from '@/assets/coin.png'
@@ -92,6 +92,7 @@ import maimaiImg from '@/assets/games/maimai.png'
 import chunithmImg from '@/assets/games/chunithm.png'
 import iidxImg from '@/assets/games/iidx.png'
 import ongekiImg from '@/assets/games/ongeki.png'
+import BackGround from './BackGround.vue'
 
 const router = useRouter()
 const checkIns = ref([])
@@ -168,7 +169,7 @@ onMounted(() => {
 .records-page-container {
   width: 100vw;
   height: 100vh; /* 关键：固定高度 */
-  background-color: #fff;
+  /* background-color: #fff; */
   display: flex;
   flex-direction: column; /* 垂直排列 */
   overflow: hidden; /* 防止出现双重滚动条 */
