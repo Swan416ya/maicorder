@@ -34,19 +34,19 @@
                 <div class="cost-row">
                   <div class="cost-item">
                     <img :src="coinImg" alt="Coin" class="cost-icon-small" />
-                    <span>¥{{ checkIn.coinCost || 0 }}</span>
+                    <span class="yuan-text">¥{{ checkIn.coinCost || 0 }}</span>
                   </div>
                   <div class="cost-item">
                     <img :src="foodImg" alt="Food" class="cost-icon-small" />
-                    <span>¥{{ checkIn.foodCost || 0 }}</span>
+                    <span class="yuan-text">¥{{ checkIn.foodCost || 0 }}</span>
                   </div>
                   <div class="cost-item">
                     <img :src="drinkImg" alt="Drink" class="cost-icon-small" />
-                    <span>¥{{ checkIn.waterCost || 0 }}</span>
+                    <span class="yuan-text">¥{{ checkIn.waterCost || 0 }}</span>
                   </div>
                   <div class="cost-item">
                     <img :src="trafficImg" alt="Transport" class="cost-icon-small" />
-                    <span>¥{{ checkIn.transportCost || 0 }}</span>
+                    <span class="yuan-text">¥{{ checkIn.transportCost || 0 }}</span>
                   </div>
                 </div>
                 <div class="total-cost">
@@ -120,7 +120,11 @@ onMounted(() => {
 })
 </script>
 
+
 <style scoped>
+.yuan-text {
+  font-size: 25px;
+}
 /* 核心布局 */
 .records-page-container {
   width: 100vw;
@@ -189,7 +193,7 @@ onMounted(() => {
 .checkin-details { font-size: 14px; color: #49454f; }
 .cost-row { display: flex; gap: 12px; margin-bottom: 4px; }
 .cost-icon-small { width: 24px; height: 24px; object-fit: contain; }
-.total-cost { font-weight: 700; color: #6750a4; margin-top: 8px; }
+.total-cost { font-weight: 800; color: #6750a4; margin-top: 8px;font-size: 20px; }
 .comment-text { margin-top: 8px; font-style: italic; opacity: 0.8; }
 
 .empty-box {

@@ -1,2 +1,5 @@
-package com.maicorder.controller;public class MaimaiB50 {
+package com.maicorder.controller;
+
+public class MaimaiB50 {
+//    TODO
 }
