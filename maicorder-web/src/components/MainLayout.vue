@@ -52,6 +52,22 @@
       </div>
     </div>
 
+    <div class="btn">
+        <PurpleFab 
+        v-if = "!isDialogOpen"
+        label="更多工具" 
+        variant="surface"
+        :extended="isFabExtended"
+        @click="moreTool"
+      >
+        <!-- 自定义图标插槽 (可选，默认是加号) -->
+        <template #icon>
+            <img :src="moreToolIcon" width="24" height="24" />
+        </template>
+      </PurpleFab>
+      </div>
+
+
     <!-- 遮罩层 -->
     <div 
       class="dialog-mask"
@@ -88,6 +104,7 @@ import stackIcon from '@/assets/stack.svg?url'
 import logoutIcon from '@/assets/logout.svg?url'
 import LoginLayout from './LoginLayout.vue'
 import BackGround from './BackGround.vue'
+import moreToolIcon from '@/assets/moreTool.svg'
 
 // 已移除 TimeBoard 引入
 
@@ -216,6 +233,10 @@ const handleLogout = () => {
   alert('已退出登录')
   router.push('/')
 }
+
+const moreTool = () => {
+  router.push('/moretoolpage')
+}
 </script>
 
 <style scoped>
@@ -259,7 +280,7 @@ const handleLogout = () => {
 }
 
 .core-content {
-  margin-top: 100px;
+  margin-top: 170px;
   display: flex;
   flex-direction: column;
   align-items: center;

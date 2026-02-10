@@ -3,6 +3,9 @@ import LoginLayout from '@/components/LoginLayout.vue'
 import MainLayout from '@/components/MainLayout.vue'
 // 假设你的记录页组件是这个名字，请确保文件存在
 import RecordsPage from '@/components/RecordsPage.vue' 
+import MoreToolPage from '@/components/moreToolPage.vue'
+
+
 
 const routes = [
   {
@@ -27,6 +30,12 @@ const routes = [
     path: '/records',
     name: 'Records',
     component: RecordsPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/moreToolPage',
+    name: 'MoreToolPage',
+    component: MoreToolPage,
     meta: { requiresAuth: true }
   }
 ]
