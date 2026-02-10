@@ -123,7 +123,7 @@ onMounted(() => {
 
 <style scoped>
 .yuan-text {
-  font-size: 25px;
+  font-size: 20px;
 }
 /* 核心布局 */
 .records-page-container {
@@ -192,7 +192,7 @@ onMounted(() => {
 /* 卡片内部样式内容 */
 .checkin-details { font-size: 14px; color: #49454f; }
 .cost-row { display: flex; gap: 12px; margin-bottom: 4px; }
-.cost-icon-small { width: 24px; height: 24px; object-fit: contain; }
+.cost-icon-small { width: 15px; height: 15px; object-fit: contain; }
 .total-cost { font-weight: 800; color: #6750a4; margin-top: 8px;font-size: 20px; }
 .comment-text { margin-top: 8px; font-style: italic; opacity: 0.8; }
 

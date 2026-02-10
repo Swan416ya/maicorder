@@ -46,6 +46,12 @@ const routes = [
     component: TestPage,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/tool/WordWallPage',
+    name: 'WordWallPage',
+    component: () => import('@/components/Page/WordWallPage.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({

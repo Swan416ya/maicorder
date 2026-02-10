@@ -82,7 +82,9 @@
         label="登出" 
         variant="surface"
         fixed
-        :extended="isFabExtended"
+        :extended="isLogoutBtnFabExtended"
+        @mouseenter="isLogoutBtnFabExtended = true"
+        @mouseleave="isLogoutBtnFabExtended = false"
         @click="handleLogout"
       >
         <!-- 自定义图标插槽 (可选，默认是加号) -->
@@ -120,6 +122,9 @@ const maxDialogSize = ref(0)
 // 动态内接长方形尺寸
 const contentWidth = ref(0)
 const contentHeight = ref(0)
+const isLogoutBtnFabExtended = ref(0)
+
+
 
 // 页面挂载时初始化
 onMounted(() => {

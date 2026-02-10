@@ -1,7 +1,7 @@
 <template>
   <div class="page-root">
     <!-- 1. 开屏转场 -->
-    <StarTransition v-if="appLoading" @finished="appLoading = false" />
+    <!-- <StarTransition v-if="appLoading" @finished="appLoading = false" /> -->
 
     <!-- 2. 全屏动态背景 (固定在底层) -->
     <BackGround />
@@ -22,24 +22,16 @@
               :title="item.ToolName" 
               :subTitle="item.location"
               clickable
-              @click="handleCardClick(item)"
+              
             >
               <div class="card-inner">
-                <div class="stats-row">
-                  <span>可用状态 {{ item.status }}</span>
-                  <!-- <span>🍱 ¥{{ item.meal }}</span> -->
-                </div>
-                <div class="card-footer">
-                  <span class="total">使用人数: {{ item.userCount }}</span>
-                  <button class="detail-btn">DETAIL</button>
-                </div>
               </div>
             </PurpleCard>
           </template>
 
           <!-- 自定义空状态插槽 -->
           <template #empty>
-            <div class="empty-state">没有发现任何签到数据</div>
+            <div class="empty-state">没有发现任何数据</div>
           </template>
 
         </CardList>
@@ -52,6 +44,8 @@
         fixed
         :extended="isFabExtended"
         @click="backhome"
+        @mouseenter="isFabExtended = true"
+        @mouseleave="isFabExtended = false"
       >
         <!-- 自定义图标插槽 (可选，默认是加号) -->
         <template #icon>
@@ -73,18 +67,13 @@ import PurpleFab from '@/components/PurpleFab.vue';
 import logoutIcon from '@/assets/logout.svg';
 import router from '@/router/index.js';
 
-const isFabExtended = ref(true);
+const isFabExtended = ref(0);
 
-const appLoading = ref(true);
+const appLoading = ref(0);
 const dataLoading = ref(true);
 const checkIns = ref([]);
 
-// 处理 Card 点击跳转
-const handleCardClick = (item) => {
-  if (item.route) {
-    router.push(item.route);
-  }
-};
+
 
 const backhome = () => {
     // alert("返回")
@@ -96,12 +85,8 @@ const backhome = () => {
 onMounted(() => {
   setTimeout(() => {
     checkIns.value = [
-      { id: 1, ToolName: '舞萌b50', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 2, ToolName: '中二b45', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 3, ToolName: '歌曲查询', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 4, ToolName: '音游神秘语录墙', location: '神秘语录大调查', status: '可用',userCount:0,route:'/tool/WordWallPage' },
-      { id: 5, ToolName: '拼好币群聊', location: 'TODO', status: '可用',userCount:0, },
-      { id: 6, ToolName: '音游地图', location: 'TODO', status: '可用',userCount:0, },
+      { id: 1, ToolName: '虽今年没有拿到舞萌神牌，但是音游群友还是给了我不少实力相当的称号，比如真拉、檄八、晓丑、白驰、华稽、祭掰、祝比、彩鸟之类，非常感谢大家的厚爱。' },
+      { id: 2, ToolName: '我要考虑这是不是我此生仅有的获得真超檄晓橙桃樱紫堇白雪辉舞熊华爽煌星宙祭祝双宴镜彩将极神舞舞kop优胜wec女子组冠军的机会，而我只需要点击获取二维码就能获得这些。' },
     ];
     dataLoading.value = false;
   }, 2000);
