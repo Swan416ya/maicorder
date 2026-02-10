@@ -1,4 +1,5 @@
 <template>
+  <BackGround>
   <div class="main-page-container">
     <!-- 顶部标题 -->
     <div class="page-title">
@@ -72,6 +73,7 @@
         </template>
       </PurpleFab>
   </div>
+  </BackGround>
 </template>
 
 <script setup>
@@ -82,6 +84,7 @@ import PurpleFab from './PurpleFab.vue'
 import stackIcon from '@/assets/stack.svg?url'
 import logoutIcon from '@/assets/logout.svg?url'
 import LoginLayout from './LoginLayout.vue'
+import BackGround from './BackGround.vue'
 
 // 已移除 TimeBoard 引入
 
@@ -228,7 +231,7 @@ const handleLogout = () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #fafafa;
+  /* background-color: #fafafa; */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -253,6 +256,7 @@ const handleLogout = () => {
 }
 
 .core-content {
+  margin-top: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
