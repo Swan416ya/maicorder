@@ -1,7 +1,6 @@
 <template>
   <div class="m3-bg-wrapper" ref="container">
     <canvas ref="canvasEl"></canvas>
-    <!-- 插槽：用于在背景上放置内容 -->
     <div class="m3-bg-content">
       <slot></slot>
     </div>
@@ -9,19 +8,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
-  // M3 Primary 颜色
-  lineColor: { type: String, default: 'rgba(103, 80, 164, 0.25)' },
-  // M3 Surface 颜色
+  // M3 Primary 颜色 (紫色系)
+  lineColor: { type: String, default: 'rgba(103, 80, 164, 0.2)' },
+  // M3 Surface 颜色 (极浅紫)
   bgColor: { type: String, default: '#F3EDF7' },
   // 波动速度
-  speed: { type: Number, default: 0.005 },
-  // 线条密度（环数）
-  density: { type: Number, default: 50 },
-  // 间距
-  spacing: { type: Number, default: 14 }
+  speed: { type: Number, default: 0.004 },
+  // 线条间距
+  spacing: { type: Number, default: 16 }
 });
 
 const container = ref(null);
@@ -29,8 +26,21 @@ const canvasEl = ref(null);
 let ctx = null;
 let animationFrame = null;
 let time = 0;
+let ringCount = 0; // 动态计算出的圈数
 
-// 初始化 Canvas 尺寸，处理高分屏模糊问题
+/**
+ * 核心逻辑：计算覆盖全屏所需的圈数
+ * 原理：计算屏幕中心到最远角落的距离 (勾股定理)
+ */
+const calculateRings = (width, height) => {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  // 计算中心到角落的最大距离
+  const maxRadius = Math.sqrt(Math.pow(centerX, 2) + Math.pow(centerY, 2));
+  // 加上一小段缓冲，确保边缘完全覆盖
+  return Math.ceil(maxRadius / props.spacing) + 5;
+};
+
 const updateSize = () => {
   if (!container.value || !canvasEl.value) return;
   const dpr = window.devicePixelRatio || 1;
@@ -42,6 +52,9 @@ const updateSize = () => {
   
   canvasEl.value.style.width = `${rect.width}px`;
   canvasEl.value.style.height = `${rect.height}px`;
+
+  // 重新计算圈数
+  ringCount = calculateRings(rect.width, rect.height);
 };
 
 const draw = () => {
@@ -60,22 +73,20 @@ const draw = () => {
   time += props.speed;
 
   ctx.strokeStyle = props.lineColor;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.0;
 
-  // 绘制有机波纹
-  for (let i = 0; i < props.density; i++) {
+  for (let i = 0; i < ringCount; i++) {
     ctx.beginPath();
-    const baseRadius = i * props.spacing + 40;
-    const points = 120; // 点越多圆周越细腻
+    const baseRadius = i * props.spacing;
+    const points = 100; // 采样点
 
     for (let j = 0; j <= points; j++) {
       const angle = (j / points) * Math.PI * 2;
       
-      // 多叠层噪音算法，模拟 Vanta 的有机感
+      // 有机噪音算法：让线条产生不规则蠕动感
       const noise = 
-        Math.sin(angle * 4 + time + i * 0.3) * 7 +
-        Math.cos(angle * 2 - time * 0.8 + i * 0.2) * 5 +
-        Math.sin(i * 0.15 + time * 1.2) * 4;
+        Math.sin(angle * 3 + time + i * 0.2) * (5 + i * 0.1) +
+        Math.cos(angle * 2 - time * 0.5 + i * 0.1) * 4;
 
       const r = baseRadius + noise;
       const x = centerX + Math.cos(angle) * r;
@@ -105,13 +116,14 @@ onUnmounted(() => {
 
 <style scoped>
 .m3-bg-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%; /* 继承父级高度 */
-  min-height: 100vh;
+  position: fixed; /* 固定在后台 */
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   margin: 0;
   padding: 0;
+  background-color: #F3EDF7;
 }
 
 canvas {
@@ -126,5 +138,9 @@ canvas {
   z-index: 1;
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none; /* 让鼠标点击穿透 */
 }
-</style>    
+</style>
