@@ -1,30 +1,35 @@
 <template>
   <div class="records-page-container">
     
-    <!-- 顶部导航栏 -->
-    <div class="nav-header">
-      <button class="back-btn" @click="router.push('/main')">← BACK</button>
-      <h2 class="page-title">HISTORY / 履历</h2>
-    </div>
-
-    <div class="divider-thick"></div>
-
-    <!-- 加载状态 -->
-    <div v-if="loading" class="loading-state">
-      LOADING DATA...
-    </div>
-
-    <!-- 空状态 -->
-    <div v-else-if="checkIns.length === 0" class="empty-state">
-      <div class="empty-box">
-        NO CHECK-IN RECORDS FOUND
+    <!-- 1. 固定顶部区域 (Header + Divider) -->
+    <!-- flex-shrink: 0 防止被压缩 -->
+    <div class="fixed-header">
+      <div class="nav-header">
+        <button class="back-btn" @click="router.push('/main')">← BACK</button>
+        <h2 class="page-title">HISTORY / 履历</h2>
       </div>
+      <div class="divider-thick"></div>
     </div>
 
-    <!-- 签到记录列表 -->
-     <!-- TODO: 滚动条优化 -->
-    <div v-else class="records-list">
-      <PurpleCard 
+    <!-- 2. 可滚动父组件 (Scroll Container) -->
+    <!-- 占据剩余高度，内容溢出时滚动 -->
+    <div class="scroll-container">
+      
+      <!-- 加载状态 (居中显示) -->
+      <div v-if="loading" class="state-center">
+        LOADING DATA...
+      </div>
+
+      <!-- 空状态 (居中显示) -->
+      <div v-else-if="checkIns.length === 0" class="state-center">
+        <div class="empty-box">
+          NO CHECK-IN RECORDS FOUND
+        </div>
+      </div>
+
+      <!-- 卡片列表内容 -->
+      <div v-else class="records-list">
+        <PurpleCard 
         v-for="checkIn in checkIns" 
         :key="checkIn.id"
         variant="filled"
@@ -63,9 +68,12 @@
           <button class="action-btn">View Details</button>
         </template>
       </PurpleCard>
+        
+        <!-- 底部垫片，防止最后一个卡片被遮挡 -->
+        <div class="list-footer-spacer"></div>
+      </div>
+      
     </div>
-    
-    
   </div>
 </template>
 
@@ -147,24 +155,76 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 全局容器：几何风格，黑白 */
-.records-page-container {
-  width: 100vw;
-  min-height: 100vh;
-  background-color: #fff;
-  padding: 20px;
-  box-sizing: border-box;
-  color: #000;
-  display: flex;
-  flex-direction: column;
+
+.cost-icon-small {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
-/* 导航头 */
+/* ================= 核心布局 ================= */
+
+/* 1. 页面容器：限制高度为视口高度，禁止整体滚动 */
+.records-page-container {
+  width: 100vw;
+  height: 100vh; /* 关键：固定高度 */
+  background-color: #fff;
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  overflow: hidden; /* 防止出现双重滚动条 */
+}
+
+/* 2. 头部区域：防止被压缩 */
+.fixed-header {
+  flex-shrink: 0;
+  padding: 20px 20px 0 20px; /* Padding 移到这里 */
+  background-color: #fff;
+  z-index: 10; /* 确保阴影在滚动内容之上（如果加阴影的话） */
+}
+
+/* 3. 滚动父组件：占据剩余空间 + 内部滚动 */
+.scroll-container {
+  flex: 1; /* 自动填满剩余垂直空间 */
+  overflow-y: auto; /* 允许垂直滚动 */
+  padding: 0 20px; /* 内容左右内边距 */
+  
+  /* 优化滚动体验 */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+}
+
+/* ================= 滚动条美化 (Chrome/Safari) ================= */
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(103, 80, 164, 0.2); /* 浅紫色 */
+  border-radius: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(103, 80, 164, 0.5); /* 深紫色 */
+}
+
+/* ================= 内容样式 ================= */
+
 .nav-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.divider-thick {
+  width: 100%;
+  height: 4px;
+  background: #000;
+  margin-bottom: 20px;
 }
 
 .back-btn {
@@ -185,30 +245,29 @@ onMounted(() => {
   margin: 0;
 }
 
-/* 分割线 */
-.divider-thick {
-  width: 100%;
-  height: 4px;
-  background: #000;
-  margin-bottom: 30px;
+/* 列表容器 */
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 卡片间距 */
+  padding-top: 10px;
 }
 
-.divider-thin {
-  width: 100%;
-  height: 1px;
-  background: #000;
-  margin: 10px 0;
+/* 列表底部留白 */
+.list-footer-spacer {
+  height: 40px; 
 }
 
-/* 状态显示 */
-.loading-state, .empty-state {
-  flex: 1;
+/* 状态居中显示 */
+.state-center {
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: bold;
   font-size: 1.2rem;
   color: #999;
+  min-height: 200px;
 }
 
 .empty-box {
@@ -216,159 +275,33 @@ onMounted(() => {
   padding: 40px;
 }
 
-/* 记录卡片 */
-.records-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
+/* 卡片内部微调 */
+.checkin-details {
+  font-size: 14px;
+  color: #49454f;
 }
 
-.record-card {
-  border: 2px solid #000;
-  padding: 15px;
-  background: #fff;
-  /* 粗野主义阴影 */
-  box-shadow: 4px 4px 0px #000;
-  transition: transform 0.1s;
-}
-
-.record-card:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px #000;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 900;
-  font-size: 1.1rem;
-  text-transform: uppercase;
-}
-
-/* 开销行 */
 .cost-row {
   display: flex;
-  gap: 15px;
-  align-items: center;
-  padding: 5px 0;
-  font-weight: bold;
+  gap: 12px;
+  margin-bottom: 4px;
 }
 
-.cost-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cost-icon-small {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.no-cost {
-  color: #999;
-  font-size: 0.8rem;
-}
-
-/* 备注 */
-.comment-box {
-  background: #f0f0f0;
-  border-left: 4px solid #000;
-  padding: 8px;
-  margin: 10px 0;
-  font-style: italic;
-  font-size: 0.9rem;
-}
-
-/* 游戏会话 */
-.sessions-list {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.session-item {
-  border: 1px solid #000;
-  padding: 10px;
-}
-
-.session-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.game-logo-small {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-
-.session-meta {
-  font-size: 0.8rem;
-  font-weight: bold;
-  display: flex;
-  gap: 10px;
-}
-
-.session-meta span {
-  background: #000;
-  color: #fff;
-  padding: 2px 6px;
-}
-
-/* 战绩表格 */
-.records-table {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  border-top: 1px solid #eee;
-  padding-top: 5px;
-}
-
-.play-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  align-items: center;
-}
-
-.play-song {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: bold;
-}
-
-.play-score {
-  font-family: monospace;
-  margin: 0 10px;
-}
-
-.play-lamp {
-  font-size: 0.7rem;
-  border: 1px solid #000;
-  padding: 1px 4px;
-}
-
-.footer-spacer {
-  height: 40px;
-}
-
-/* 签到详情样式 */
-.checkin-details {
-  line-height: 1.6;
+.cost-label {
+  font-weight: 600;
+  margin-right: 4px;
 }
 
 .total-cost {
-  font-weight: bold;
-  margin-top: 10px;
+  font-weight: 700;
   color: #6750a4;
+  margin-top: 8px;
+}
+
+.comment-text {
+  margin-top: 8px;
+  font-style: italic;
+  opacity: 0.8;
 }
 
 .action-btn {
@@ -383,6 +316,16 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-  background: rgba(103, 80, 164, 0.1);
+  background: rgba(103, 80, 164, 0.08);
+}
+
+/* 简单的进入动画 */
+.record-item-anim {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
