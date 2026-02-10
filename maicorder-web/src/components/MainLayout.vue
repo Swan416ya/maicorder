@@ -1,5 +1,6 @@
 <template>
   <BackGround>
+
   <div class="main-page-container">
     <!-- 顶部标题 -->
     <div class="page-title">
@@ -73,6 +74,7 @@
         </template>
       </PurpleFab>
   </div>
+  
   </BackGround>
 </template>
 

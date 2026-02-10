@@ -1,6 +1,7 @@
 <template>
   <div class="m3-bg-wrapper" ref="container">
     <canvas ref="canvasEl"></canvas>
+    
     <div class="m3-bg-content">
       <slot></slot>
     </div>
@@ -141,6 +142,5 @@ canvas {
   display: flex;
   justify-content: center;
   align-items: center;
-  pointer-events: none; /* 让鼠标点击穿透 */
 }
 </style>
