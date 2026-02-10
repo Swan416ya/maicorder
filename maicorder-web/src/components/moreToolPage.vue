@@ -80,7 +80,7 @@ const checkIns = ref([]);
 
 
 const backhome = () => {
-    alert("返回")
+    // alert("返回")
     router.push('/')
 }
 
