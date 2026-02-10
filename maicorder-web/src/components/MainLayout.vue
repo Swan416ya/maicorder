@@ -34,8 +34,18 @@
 
       <!-- 已移除 TimeBoard 组件 -->
 
-      <div class="view-records-link" @click="handleViewRecords" v-if="!isDialogOpen">
-        我的记录
+      <div>
+        <PurpleFab 
+        label="查看记录" 
+        variant="surface"
+        :extended="isFabExtended"
+        @click="handleViewRecords"
+      >
+        <!-- 自定义图标插槽 (可选，默认是加号) -->
+        <template #icon>
+            <img :src="stackIcon" width="24" height="24" />
+        </template>
+      </PurpleFab>
       </div>
     </div>
 
@@ -49,7 +59,18 @@
     </div>
 
     <!-- 右下角登出按钮 -->
-    <button class="logout-btn" @click="handleLogout">登出</button>
+    <PurpleFab 
+        label="登出" 
+        variant="surface"
+        fixed
+        :extended="isFabExtended"
+        @click="handleLogout"
+      >
+        <!-- 自定义图标插槽 (可选，默认是加号) -->
+        <template #icon>
+           <img :src="logoutIcon" width="24" height="24" />
+        </template>
+      </PurpleFab>
   </div>
 </template>
 
@@ -57,6 +78,11 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CheckInDialog from './CheckInDialog.vue'
+import PurpleFab from './PurpleFab.vue'
+import stackIcon from '@/assets/stack.svg?url'
+import logoutIcon from '@/assets/logout.svg?url'
+import LoginLayout from './LoginLayout.vue'
+
 // 已移除 TimeBoard 引入
 
 const router = useRouter()
