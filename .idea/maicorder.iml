@@ -5,9 +5,9 @@
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/maicorderfrontend/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/maicorderfrontend/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/maicorderfrontend/build" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/build" />
     </content>
   </component>
 </module>
