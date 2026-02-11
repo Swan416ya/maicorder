@@ -1,10 +1,8 @@
 <template>
   <BackGround>
-    <!-- 1. 转场动画：加载 1s 后消失露出背景 -->
     <StarTransition v-if="appLoading" @finished="appLoading = false" />
 
     <div class="records-page-container" v-if="!appLoading">
-      <!-- 2. 固定顶部区域 -->
       <div class="fixed-header">
         <div class="nav-header">
           <button class="back-btn" @click="router.push('/main')">← BACK</button>
@@ -13,25 +11,19 @@
         <div class="divider-thick"></div>
       </div>
 
-      <!-- 3. 可滚动内容区域 -->
       <div class="scroll-container">
-        <!-- 
-          使用 CardList 组件替换原有的 v-for/v-if/v-else 
-          items: 传入数据数组
-          loading: 传入请求状态
-        -->
         <CardList :items="checkIns" :loading="loading">
-          <!-- 作用域插槽：item 即为每一个 checkIn 对象 -->
           <template #default="{ item: checkIn }">
             <PurpleCard 
               variant="filled"
               :title="formatDate(checkIn.checkInTime)"
-              :subTitle="`Arcade ID: ${checkIn.arcadeId}`"
+              :subTitle="checkIn.arcadeName || checkIn.arcadeId || '未知'"
               clickable
               @click="viewCheckInDetail(checkIn.id)"
             >
               <div class="checkin-details">
-                <div class="cost-row">
+                <!-- 5等分消费容器（4项+total） -->
+                <div class="cost-container">
                   <div class="cost-item">
                     <img :src="coinImg" alt="Coin" class="cost-icon-small" />
                     <span class="yuan-text">¥{{ checkIn.coinCost || 0 }}</span>
@@ -48,18 +40,20 @@
                     <img :src="trafficImg" alt="Transport" class="cost-icon-small" />
                     <span class="yuan-text">¥{{ checkIn.transportCost || 0 }}</span>
                   </div>
+                  <!-- Total项：最后1/5宽度，紫色文字 -->
+                  <div class="cost-item total-item">
+                    <span class="yuan-text">¥{{ calculateTotal(checkIn) }}</span>
+                  </div>
                 </div>
-                <div class="total-cost">
-                  Total: ¥{{ calculateTotal(checkIn) }}
-                </div>
-                <div class="comment-text">
-                  Note: {{ checkIn.comment === '' ? '用户无评论' : checkIn.comment }}
+
+                <!-- Note白框：无内容不显示，无前缀 -->
+                <div v-if="checkIn.comment && checkIn.comment.trim()" class="comment-box">
+                  {{ checkIn.comment.trim() }}
                 </div>
               </div>
             </PurpleCard>
           </template>
 
-          <!-- 可选：自定义空状态内容 -->
           <template #empty>
             <div class="empty-box">
               NO CHECK-IN RECORDS FOUND
@@ -76,13 +70,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// 引入组件
 import BackGround from '../components/BackGround.vue'
 import StarTransition from '../components/StarTransition.vue'
 import CardList from '../components/CardList.vue'
 import PurpleCard from '@/components/PurpleCard.vue'
 
-// 引入图片资源
 import coinImg from '@/assets/coin.png'
 import foodImg from '@/assets/food.png'
 import drinkImg from '@/assets/drink.png'
@@ -90,26 +82,82 @@ import trafficImg from '@/assets/traffic.png'
 
 const router = useRouter()
 const checkIns = ref([])
-const loading = ref(true)    // 数据加载状态
-const appLoading = ref(true) // 开屏动画状态
+const loading = ref(true)
+const appLoading = ref(true)
 
-const formatDate = (dateStr) => dateStr || ''
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  try {
+    const date = new Date(dateStr)
+    return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
+  } catch (e) {
+    return dateStr
+  }
+}
+
 const calculateTotal = (c) => (c.coinCost || 0) + (c.foodCost || 0) + (c.waterCost || 0) + (c.transportCost || 0)
-
 const viewCheckInDetail = (id) => router.push(`/checkin/detail/${id}`)
 
 const fetchCheckIns = async () => {
   try {
+    loading.value = true
     const token = localStorage.getItem('token')
     const userId = localStorage.getItem('userId')
-    if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    
+
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
+
     const res = await axios.get(`/api/records/checkins/${userId}`)
     if (res.data.code === 200) {
       checkIns.value = res.data.data || []
+      console.log('✅ 打卡记录查询成功：', checkIns.value)
+
+      if (checkIns.value.length > 0) {
+        try {
+          const arcadeIds = checkIns.value
+            .map(item => {
+              const id = Number(item.arcadeId)
+              return isNaN(id) ? null : id
+            })
+            .filter(id => id !== null)
+            .filter((id, index, self) => self.indexOf(id) === index)
+
+          console.log('📋 提取的机厅ID：', arcadeIds)
+
+          if (arcadeIds.length > 0) {
+            const nameRes = await axios.post('/api/arcades/names', arcadeIds)
+            console.log('📦 机厅名称接口返回：', nameRes.data)
+
+            if (nameRes.data && nameRes.data.code === 200) {
+              let nameMap = {};
+              const rawData = nameRes.data.data || {};
+
+              // 如果是对象，直接用
+              if (typeof rawData === 'object' && !Array.isArray(rawData)) {
+                nameMap = rawData;
+              } 
+              // 如果是数组，转换成对象
+              else if (Array.isArray(rawData)) {
+                rawData.forEach(item => {
+                  // 按后端实际字段名调整
+                  nameMap[Number(item.id)] = item.name; 
+                });
+              }
+
+              checkIns.value = checkIns.value.map(item => ({
+                ...item,
+                arcadeName: nameMap[Number(item.arcadeId)] || `ID: ${item.arcadeId}`
+              }));
+            }
+          }
+        } catch (nameError) {
+          console.error('机厅名称查询失败：', nameError.message)
+        }
+      }
     }
   } catch (error) {
-    console.error('Failed to load check-ins:', error)
+    console.error('打卡记录查询失败：', error.message)
   } finally {
     loading.value = false
   }
@@ -120,12 +168,10 @@ onMounted(() => {
 })
 </script>
 
-
 <style scoped>
 .yuan-text {
   font-size: 20px;
 }
-/* 核心布局 */
 .records-page-container {
   width: 100vw;
   height: 100vh;
@@ -133,16 +179,12 @@ onMounted(() => {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  z-index: 1; /* 确保在背景之上 */
+  z-index: 1;
 }
-
 .fixed-header {
   flex-shrink: 0;
   padding: 20px 20px 0 20px;
-  /* 如果希望头部透明露出背景波纹，可以删掉 background-color */
-  /* background-color: #fff; */ 
 }
-
 .scroll-container {
   flex: 1;
   overflow-y: auto;
@@ -150,29 +192,23 @@ onMounted(() => {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
-
-/* 隐藏原有的滚动条或保持美化 */
 .scroll-container::-webkit-scrollbar { width: 4px; }
 .scroll-container::-webkit-scrollbar-thumb {
   background-color: rgba(103, 80, 164, 0.2);
   border-radius: 4px;
 }
-
-/* 样式保持一致 */
 .nav-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
-
 .divider-thick {
   width: 100%;
   height: 4px;
   background: #000;
   margin-bottom: 20px;
 }
-
 .back-btn {
   background: #000;
   color: #fff;
@@ -181,20 +217,67 @@ onMounted(() => {
   font-weight: bold;
   cursor: pointer;
 }
-
 .page-title {
   font-weight: 900;
   font-size: 1.5rem;
   text-transform: uppercase;
   margin: 0;
 }
+.checkin-details { 
+  font-size: 14px; 
+  color: #49454f; 
+  width: 100%;
+}
 
-/* 卡片内部样式内容 */
-.checkin-details { font-size: 14px; color: #49454f; }
-.cost-row { display: flex; gap: 12px; margin-bottom: 4px; }
-.cost-icon-small { width: 15px; height: 15px; object-fit: contain; }
-.total-cost { font-weight: 800; color: #6750a4; margin-top: 8px;font-size: 20px; }
-.comment-text { margin-top: 8px; font-style: italic; opacity: 0.8; }
+/* ========== 核心优化：5等分消费容器 ========== */
+.cost-container {
+  display: flex;
+  width: 100%;
+  margin: 0 0 12px 0;
+  padding: 0;
+  gap: 0; /* 无间距，严格5等分 */
+}
+/* 每个消费项强制占1/5宽度，内部完全居中 */
+.cost-item {
+  flex: 1 0 20%; /* 强制20%宽度，不可收缩/扩展 */
+  max-width: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 水平居中 */
+  justify-content: center; /* 垂直居中 */
+  padding: 4px 0;
+  box-sizing: border-box;
+}
+.cost-icon-small { 
+  width: 15px; 
+  height: 15px; 
+  object-fit: contain; 
+  margin-bottom: 4px; 
+}
+/* Total项特殊样式：紫色加粗 */
+.total-item .yuan-text {
+  color: #6750a4; /* 紫色 */
+  font-weight: 800;
+  font-size: 22px; /* 可选：比其他项稍大，更突出 */
+}
+
+/* ========== Note白框优化 ========== */
+.comment-box {
+  background-color: #ffffff; 
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-style: italic;
+  opacity: 0.9;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #f0f0f0; /* 轻微边框更精致 */
+}
+
+/* ========== 废弃样式 ========== */
+.cost-row, .total-cost, .comment-text { 
+  display: none; 
+}
 
 .empty-box {
   border: 1px dashed #000;
