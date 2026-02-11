@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginLayout from '@/components/LoginLayout.vue'
-import MainLayout from '@/components/MainLayout.vue'
+import LoginLayout from '@/pages/LoginLayout.vue'
+import MainLayout from '@/pages/MainLayout.vue'
 // 假设你的记录页组件是这个名字，请确保文件存在
-import RecordsPage from '@/components/RecordsPage.vue' 
-import MoreToolPage from '@/components/moreToolPage.vue'
-import TestPage from '@/components/TestPage.vue'
+import RecordsPage from '@/pages/RecordsPage.vue'
+import MoreToolPage from '@/pages/moreToolPage.vue'
+import TestPage from '@/pages/TestPage.vue'
 // import CardListExample from '@/components/CardListExample.vue'
 
 
@@ -49,7 +49,7 @@ const routes = [
   {
     path: '/tool/WordWallPage',
     name: 'WordWallPage',
-    component: () => import('@/components/Page/WordWallPage.vue'),
+    component: () => import('@/pages/WordWallPage.vue'),
     meta: { requiresAuth: true }
   },
 ]

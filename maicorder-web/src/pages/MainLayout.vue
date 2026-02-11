@@ -100,12 +100,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import CheckInDialog from './CheckInDialog.vue'
-import PurpleFab from './PurpleFab.vue'
+import CheckInDialog from '../components/CheckInDialog.vue'
+import PurpleFab from '../components/PurpleFab.vue'
 import stackIcon from '@/assets/stack.svg?url'
 import logoutIcon from '@/assets/logout.svg?url'
 import LoginLayout from './LoginLayout.vue'
-import BackGround from './BackGround.vue'
+import BackGround from '../components/BackGround.vue'
 import moreToolIcon from '@/assets/moreTool.svg'
 
 // 已移除 TimeBoard 引入

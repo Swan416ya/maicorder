@@ -77,9 +77,9 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 // 引入组件
-import BackGround from './BackGround.vue'
-import StarTransition from './StarTransition.vue'
-import CardList from './CardList.vue'
+import BackGround from '../components/BackGround.vue'
+import StarTransition from '../components/StarTransition.vue'
+import CardList from '../components/CardList.vue'
 import PurpleCard from '@/components/PurpleCard.vue'
 
 // 引入图片资源
