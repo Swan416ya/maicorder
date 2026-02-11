@@ -274,15 +274,5 @@ onMounted(() => {
   border: 1px solid #f0f0f0; /* 轻微边框更精致 */
 }
 
-/* ========== 废弃样式 ========== */
-.cost-row, .total-cost, .comment-text { 
-  display: none; 
-}
 
-.empty-box {
-  border: 1px dashed #000;
-  padding: 40px;
-  text-align: center;
-  font-weight: bold;
-}
 </style>

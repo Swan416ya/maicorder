@@ -5,9 +5,17 @@
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/runConfigurations" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorder-web/dist" />
       <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/android/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/build" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/ios/Flutter/ephemeral" />
+      <excludeFolder url="file://$MODULE_DIR$/maicorderAndord/macos/Flutter/ephemeral" />
     </content>
   </component>
 </module>

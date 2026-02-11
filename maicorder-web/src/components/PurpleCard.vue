@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 
-// 移除arcadeLogo引入（不需要logo）
 
 // 定义 Props
 const props = defineProps({

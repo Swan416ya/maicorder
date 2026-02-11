@@ -19,13 +19,14 @@
           <template #default="{ item }">
             <PurpleCard 
               variant="elevated" 
-              :title="item.ToolName" 
+              
               :subTitle="item.location"
               clickable
               
             >
-              <div class="card-inner">
-              </div>
+              <div v-if="item.ToolName && item.ToolName.trim()" class="comment-box">
+                  {{ item.ToolName }}
+                </div>
             </PurpleCard>
           </template>
 
