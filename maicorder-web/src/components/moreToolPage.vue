@@ -100,8 +100,8 @@ onMounted(() => {
       { id: 2, ToolName: '中二b45', location: 'TODO简介', status: '不可用',userCount:0 },
       { id: 3, ToolName: '歌曲查询', location: 'TODO简介', status: '不可用',userCount:0 },
       { id: 4, ToolName: '音游神秘语录墙', location: '神秘语录大调查', status: '可用',userCount:0,route:'/tool/WordWallPage' },
-      { id: 5, ToolName: '拼好币群聊', location: 'TODO', status: '可用',userCount:0, },
-      { id: 6, ToolName: '音游地图', location: 'TODO', status: '可用',userCount:0, },
+      { id: 5, ToolName: '拼好币群聊', location: 'TODO', status: '不可用',userCount:0, },
+      { id: 6, ToolName: '音游地图', location: 'TODO', status: '不可用',userCount:0, },
     ];
     dataLoading.value = false;
   }, 2000);
