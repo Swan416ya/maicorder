@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue';
 
-
 // 定义 Props
 const props = defineProps({
   title: { type: String, default: '' },
@@ -58,35 +57,44 @@ const cardClasses = computed(() => {
 </template>
 
 <style scoped>
+/* 重新定义主题变量 */
 .md3-card {
-  --md-sys-color-primary: #6750a4;
+  --md-sys-color-primary: #000000; /* 改为黑色 */
   --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-primary-container: #eaddff;
-  --md-sys-color-on-primary-container: #21005d;
+  --md-sys-color-primary-container: #ffffff;
+  --md-sys-color-on-primary-container: #000000;
   
-  --md-sys-color-surface: #fffbfe;
-  --md-sys-color-surface-container-highest: #e6e0e9;
-  --md-sys-color-on-surface: #1c1b1f;
-  --md-sys-color-on-surface-variant: #49454f;
-  --md-sys-color-outline: #79747e;
+  --md-sys-color-surface: rgba(255, 255, 255, 0.6); /* 白色80%透明度 */
+  --md-sys-color-surface-container-highest: rgba(255, 255, 255, 0.7);
+  --md-sys-color-on-surface: #000000; /* 黑色文字 */
+  --md-sys-color-on-surface-variant: #333333; /* 深灰色副标题 */
+  --md-sys-color-outline: #000000; /* 黑色描边 */
   
-  --md-sys-elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-  --md-sys-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+  /* 移除阴影 */
+  --md-sys-elevation-1: none;
+  --md-sys-elevation-2: none;
   
-  --md-sys-shape-corner: 12px;
+  /* 无圆角 */
+  --md-sys-shape-corner: 0px;
 }
 
 .md3-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: var(--md-sys-shape-corner);
+  border-radius: var(--md-sys-shape-corner); /* 无圆角 */
   overflow: hidden;
   text-align: left;
   transition: box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s linear;
   font-family: 'Roboto', sans-serif;
   isolation: isolate;
   margin-bottom: 16px; /* 增加卡片间距 */
+  /* 白色80%透明度背景 */
+  background-color: var(--md-sys-color-surface);
+  /* 加粗的黑色描边 - 从1px改为2px */
+  border: 2px solid var(--md-sys-color-outline);
+  /* 移除阴影 */
+  box-shadow: var(--md-sys-elevation-1);
 }
 
 .md3-card__state-layer {
@@ -95,7 +103,7 @@ const cardClasses = computed(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--md-sys-color-on-surface);
+  background-color: var(--md-sys-color-outline); /* 使用黑色作为状态层颜色 */
   opacity: 0;
   z-index: -1;
   transition: opacity 0.2s ease;
@@ -114,28 +122,33 @@ const cardClasses = computed(() => {
   opacity: 0.12;
 }
 
+/* 修改 elevated 变体 - 使用白色透明背景和加粗黑色描边 */
 .md3-card--elevated {
   background-color: var(--md-sys-color-surface);
   color: var(--md-sys-color-on-surface);
+  border: 2px solid var(--md-sys-color-outline); /* 加粗描边 */
   box-shadow: var(--md-sys-elevation-1);
 }
 .md3-card--elevated.md3-card--clickable:hover {
   box-shadow: var(--md-sys-elevation-2);
+  background-color: rgba(255, 255, 255, 0.9); /* 悬停时稍微增加不透明度 */
 }
 
+/* 修改 filled 变体 - 使用稍深的白色透明背景和加粗黑色描边 */
 .md3-card--filled {
   background-color: var(--md-sys-color-surface-container-highest);
   color: var(--md-sys-color-on-surface);
-  border: none;
+  border: 2px solid var(--md-sys-color-outline); /* 加粗描边 */
 }
 
+/* 修改 outlined 变体 - 保持加粗黑色描边 */
 .md3-card--outlined {
   background-color: var(--md-sys-color-surface);
-  border: 1px solid var(--md-sys-color-outline);
+  border: 2px solid var(--md-sys-color-outline); /* 加粗描边 */
   color: var(--md-sys-color-on-surface);
 }
 
-/* ========== 核心修改：头部布局 ========== */
+/* ========== 头部布局 ========== */
 .md3-card__header {
   padding: 16px 16px 0 16px;
 }
@@ -179,6 +192,7 @@ const cardClasses = computed(() => {
   color: var(--md-sys-color-on-surface-variant);
   width: 100%;
   box-sizing: border-box;
+  background: transparent; /* 确保内容区域透明 */
 }
 
 .md3-card__actions {
@@ -186,5 +200,6 @@ const cardClasses = computed(() => {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  background: transparent; /* 确保操作区域透明 */
 }
 </style>

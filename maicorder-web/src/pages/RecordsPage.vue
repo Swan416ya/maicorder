@@ -40,16 +40,22 @@
                     <img :src="trafficImg" alt="Transport" class="cost-icon-small" />
                     <span class="yuan-text">¥{{ checkIn.transportCost || 0 }}</span>
                   </div>
-                  <!-- Total项：最后1/5宽度，紫色文字 -->
+                  <!-- Total项：最后1/5宽度，改为黑色文字 -->
                   <div class="cost-item total-item">
-                    <span class="yuan-text">¥{{ calculateTotal(checkIn) }}</span>
+                    <span class="total-text">¥{{ calculateTotal(checkIn) }}</span>
                   </div>
                 </div>
 
-                <!-- Note白框：无内容不显示，无前缀 -->
-                <div v-if="checkIn.comment && checkIn.comment.trim()" class="comment-box">
-                  {{ checkIn.comment.trim() }}
-                </div>
+                <!-- 分隔线和Note区域 -->
+                <template v-if="checkIn.comment && checkIn.comment.trim()">
+                  <!-- 分隔线 -->
+                  <div class="comment-divider"></div>
+                  <!-- Note区域 -->
+                  <div class="comment-section">
+                    <div class="comment-title">NOTE</div>
+                    <div class="comment-content">{{ checkIn.comment.trim() }}</div>
+                  </div>
+                </template>
               </div>
             </PurpleCard>
           </template>
@@ -172,6 +178,7 @@ onMounted(() => {
 .yuan-text {
   font-size: 20px;
 }
+
 .records-page-container {
   width: 100vw;
   height: 100vh;
@@ -194,7 +201,7 @@ onMounted(() => {
 }
 .scroll-container::-webkit-scrollbar { width: 4px; }
 .scroll-container::-webkit-scrollbar-thumb {
-  background-color: rgba(103, 80, 164, 0.2);
+  background-color: rgba(0, 0, 0, 0.2); /* 改为黑色 */
   border-radius: 4px;
 }
 .nav-header {
@@ -254,25 +261,51 @@ onMounted(() => {
   object-fit: contain; 
   margin-bottom: 4px; 
 }
-/* Total项特殊样式：紫色加粗 */
-.total-item .yuan-text {
-  color: #6750a4; /* 紫色 */
+/* Total项特殊样式：改为黑色加粗 */
+.total-item .total-text {
+  color: #000000; /* 改为黑色 */
   font-weight: 800;
   font-size: 22px; /* 可选：比其他项稍大，更突出 */
 }
 
-/* ========== Note白框优化 ========== */
-.comment-box {
-  background-color: #ffffff; 
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-top: 8px;
-  font-style: italic;
-  opacity: 0.9;
+/* ========== Note新样式：分隔线+标题+内容 ========== */
+.comment-divider {
   width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #f0f0f0; /* 轻微边框更精致 */
+  height: 1px;
+  background-color: #e0e0e0; /* 灰色分隔线 */
+  margin: 12px 0;
 }
 
+.comment-section {
+  margin-top: 8px;
+  padding: 8px 0;
+  width: 100%;
+}
 
+.comment-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.comment-content {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.4;
+  font-style: italic;
+  white-space: pre-line; /* 保留换行符 */
+  word-break: break-word;
+}
+
+/* 删除原来的.comment-box样式 */
+.empty-box {
+  text-align: center;
+  padding: 40px;
+  border: 2px dashed #ccc;
+  border-radius: 20px;
+  color: #888;
+}
 </style>
