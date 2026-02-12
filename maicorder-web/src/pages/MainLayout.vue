@@ -1,114 +1,109 @@
 <template>
   <BackGround>
 
-  <div class="main-page-container">
-    <!-- 顶部标题 -->
-    <div class="page-title">
-      <div class="title-line">{{ userName }}</div>
-      <div class="title-line">今天勤了</div>
-    </div>
+    <div class="main-page-container">
+      <!-- 顶部标题 -->
+      <div class="page-title">
+        <div class="title-line">{{ userName }}</div>
+        <div class="title-line">今天勤了</div>
+      </div>
 
-    <!-- 核心区域：圆形按钮/弹窗容器 -->
-    <div class="core-content">
-      <div 
-        class="check-btn-container"
-        :class="{ 'dialog-expanded': isDialogOpen }"
-        @click="handleCheckIn"
-        @click.stop="preventMaskClose"
-      >
-        <!-- 动态内接长方形容器 -->
-        <div 
-          class="dialog-content-wrapper"
-          v-if="isDialogOpen"
-          :style="{ 
-            width: contentWidth + 'px', 
+      <!-- 核心区域：圆形按钮/弹窗容器 -->
+      <div class="core-content">
+        <div class="check-btn-container" :class="{ 'dialog-expanded': isDialogOpen }" @click="handleCheckIn"
+          @click.stop="preventMaskClose">
+          <!-- 动态内接长方形容器 -->
+          <div class="dialog-content-wrapper" v-if="isDialogOpen" :style="{
+            width: contentWidth + 'px',
             height: contentHeight + 'px',
             borderRadius: '16px'
-          }"
-        >
-          <CheckInDialog 
-            @close="closeDialog"
-          />
+          }">
+            <CheckInDialog @close="closeDialog" />
+          </div>
+
+          <span class="btn-text" v-if="!isDialogOpen">勤了</span>
         </div>
-
-        <span class="btn-text" v-if="!isDialogOpen">勤了</span>
       </div>
 
-      <!-- 已移除 TimeBoard 组件 -->
-
-      <div class="btn">
-        <PurpleFab 
-        v-if = "!isDialogOpen"
-        label="查看记录" 
-        variant="surface"
-        :extended="isFabExtended"
-        @click="handleViewRecords"
-      >
-        <!-- 自定义图标插槽 (可选，默认是加号) -->
-        <template #icon>
-            <img :src="stackIcon" width="24" height="24" />
-        </template>
-      </PurpleFab>
+      
+      <!-- 遮罩层 -->
+      <div class="dialog-mask" v-if="isDialogOpen" @click="closeDialog">
+        <p class="mask-tip">点击空白处返回</p>
       </div>
     </div>
 
-    <div class="btn">
-        <PurpleFab 
-        v-if = "!isDialogOpen"
-        label="更多工具" 
-        variant="surface"
-        :extended="isFabExtended"
-        @click="moreTool"
-      >
-        <!-- 自定义图标插槽 (可选，默认是加号) -->
-        <template #icon>
-            <img :src="moreToolIcon" width="24" height="24" />
-        </template>
-      </PurpleFab>
-      </div>
+
+      <FloatingToolbar
+      v-model="currentSelection"
+      :items="toolbarData"
+      :selectable="config.selectable"
+      :show-label="config.showLabel"
+    />
 
 
-    <!-- 遮罩层 -->
-    <div 
-      class="dialog-mask"
-      v-if="isDialogOpen"
-      @click="closeDialog"
-    >
-      <p class="mask-tip">点击空白处返回</p>
-    </div>
-
-    <!-- 右下角登出按钮 -->
-    <PurpleFab 
-        label="登出" 
-        variant="surface"
-        fixed
-        :extended="isLogoutBtnFabExtended"
-        @mouseenter="isLogoutBtnFabExtended = true"
-        @mouseleave="isLogoutBtnFabExtended = false"
-        @click="handleLogout"
-      >
-        <!-- 自定义图标插槽 (可选，默认是加号) -->
-        <template #icon>
-           <img :src="logoutIcon" width="24" height="24" />
-        </template>
-      </PurpleFab>
-  </div>
-  
   </BackGround>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import CheckInDialog from '../components/CheckInDialog.vue'
 import PurpleFab from '../components/PurpleFab.vue'
-import stackIcon from '@/assets/stack.svg?url'
-import logoutIcon from '@/assets/logout.svg?url'
+import stackIcon from '@/assets/stack.svg?raw'
+import logoutIcon from '@/assets/logout.svg?raw'
 import LoginLayout from './LoginLayout.vue'
 import BackGround from '../components/BackGround.vue'
-import moreToolIcon from '@/assets/moreTool.svg'
+import moreToolIcon from '@/assets/moreTool.svg?raw'
 
-// 已移除 TimeBoard 引入
+
+import FloatingToolbar from '@/components/FloatingToolbar.vue'
+const currentSelection = ref('format_bold');
+// 配置控制
+const config = reactive({
+  selectable: true, // 默认开启选中背景
+  showLabel: true   // 默认开启文字
+});
+// 图标数据 (SVG 路径)
+const icons = {
+  bold: stackIcon,
+  italic: `<svg viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>`,
+  link: `<svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>`,
+  color: `<svg viewBox="0 0 24 24"><path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25a2.5 2.5 0 0 0 3.92 2.06l-.02.19a2.5 2.5 0 0 0 5 0l-.02-.19a2.5 2.5 0 0 0 3.92-2.06c0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l-.08-.69h-1.84l-.08.69c-.41-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5z"/></svg>`,
+};
+
+// 工具栏数据定义
+const toolbarData = [
+  {
+    key: 'format_bold',
+    label: '查看记录',
+    title: 'Bold',
+    icon: stackIcon,
+    action: () => handleViewRecords()
+  },
+  {
+    key: 'format_italic',
+    label: '更多工具',
+    title: 'Italic',
+    icon: moreToolIcon,
+    action: () => moreTool()
+  },
+  {
+    key: 'insert_link',
+    label: '个人主页',
+    title: 'Link',
+    icon: icons.link,
+    // 示例：点击执行特殊逻辑
+    // action: () => handleLogout()
+  },
+  {
+    key: 'color_fill',
+    label: '退出登录',
+    title: 'Color',
+    icon: logoutIcon,
+    action: () => handleLogout()
+  }
+];
+
 
 const router = useRouter()
 
@@ -155,32 +150,32 @@ const calculateMaxDialogSize = () => {
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
   const longSide = Math.max(windowWidth, windowHeight)
-  
+
   // 设置圆的最大直径（屏幕长边的 75%）
   maxDialogSize.value = Math.floor(longSide * 0.75)
-  
+
   // 如果弹窗是打开状态，保持尺寸同步
   if (isDialogOpen.value) {
     dialogSize.value = maxDialogSize.value
   }
 
   // --- 核心修改区域 ---
-  
+
   // 1. 扩大有效直径
   // 原来是 * 0.9 (留10%边距)，改为 * 0.98 (只留2%边距，几乎贴边)
   // 注意：这里使用 maxDialogSize 计算，确保计算的是展开后的大小
-  const diameter = maxDialogSize.value * 0.98 
+  const diameter = maxDialogSize.value * 0.98
 
   // 2. 宽度基准
   // 保持 0.9，防止宽度太宽导致左右没空隙不好看
-  const screenRatioBase = 0.9 
+  const screenRatioBase = 0.9
 
   if (windowWidth > windowHeight) {
     // 横屏逻辑
     let height = windowHeight * screenRatioBase
     // 保护逻辑：如果算出的高比直径还大，就限制为直径
     if (height > diameter) height = diameter
-    
+
     contentHeight.value = Math.floor(height)
     contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
   } else {
@@ -188,7 +183,7 @@ const calculateMaxDialogSize = () => {
     let width = windowWidth * screenRatioBase
     // 保护逻辑
     if (width > diameter) width = diameter
-    
+
     contentWidth.value = Math.floor(width)
     // 勾股定理算出最大高度：h = √(d² - w²)
     contentHeight.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentWidth.value, 2)))
@@ -224,7 +219,7 @@ const handleCheckIn = () => {
   }
 }
 
-const preventMaskClose = () => {}
+const preventMaskClose = () => { }
 
 // 查看我的记录
 const handleViewRecords = () => {
@@ -245,12 +240,6 @@ const moreTool = () => {
 </script>
 
 <style scoped>
-
-.btn {
-  margin-top: 30px;
-}
-
-
 
 /* 样式保持不变，核心布局逻辑未变 */
 .main-page-container {
@@ -285,11 +274,12 @@ const moreTool = () => {
 }
 
 .core-content {
-  margin-top: 170px;
+  margin-top: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px; /* 保持间距，移除时钟后按钮和下方链接会靠得更近一点，视觉上更紧凑 */
+  gap: 20px;
+  /* 保持间距，移除时钟后按钮和下方链接会靠得更近一点，视觉上更紧凑 */
   z-index: 2;
 }
 
@@ -324,7 +314,7 @@ const moreTool = () => {
   justify-content: center;
   align-items: flex-start;
   box-sizing: border-box;
-  
+
   /* 尺寸 */
   width: 100%;
   height: 100%;
@@ -349,25 +339,21 @@ const moreTool = () => {
     80% - 95%: 从显示渐变到透明（羽化区）
     95% - 100%: 完全透明（纯白区域）
   */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) 5%, 
-    rgba(0, 0, 0, 1) 20%,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0) 95%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  
-  mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) 5%, 
-    rgba(0, 0, 0, 1) 20%,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0) 95%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  -webkit-mask-image: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 5%,
+      rgba(0, 0, 0, 1) 20%,
+      rgba(0, 0, 0, 1) 80%,
+      rgba(0, 0, 0, 0) 95%,
+      rgba(0, 0, 0, 0) 100%);
+
+  mask-image: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 5%,
+      rgba(0, 0, 0, 1) 20%,
+      rgba(0, 0, 0, 1) 80%,
+      rgba(0, 0, 0, 0) 95%,
+      rgba(0, 0, 0, 0) 100%);
 
   /* 确保没有其他遮罩合成模式干扰 */
   -webkit-mask-composite: source-over;
@@ -379,11 +365,12 @@ const moreTool = () => {
 
 /* 隐藏滚动条 */
 .dialog-content-wrapper::-webkit-scrollbar {
-  display: none; 
+  display: none;
 }
+
 .dialog-content-wrapper {
   -ms-overflow-style: none;
-  scrollbar-width: none; 
+  scrollbar-width: none;
 }
 
 .btn-text {
