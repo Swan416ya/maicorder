@@ -96,7 +96,7 @@ const backhome = () => {
 onMounted(() => {
   setTimeout(() => {
     checkIns.value = [
-      { id: 1, ToolName: '舞萌b50', location: 'TODO简介', status: '不可用',userCount:0 },
+      { id: 1, ToolName: '舞萌b50', location: 'TODO简介', status: '不可用',userCount:0,route:'/tool/wmB50Page' },
       { id: 2, ToolName: '中二b45', location: 'TODO简介', status: '不可用',userCount:0 },
       { id: 3, ToolName: '歌曲查询', location: 'TODO简介', status: '不可用',userCount:0 },
       { id: 4, ToolName: '音游神秘语录墙', location: '神秘语录大调查', status: '可用',userCount:0,route:'/tool/WordWallPage' },

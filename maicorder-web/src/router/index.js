@@ -52,6 +52,24 @@ const routes = [
     component: () => import('@/pages/WordWallPage.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/tool/wmB50Page',
+    name: 'wmB50Page',
+    component: () => import('@/pages/wmB50Page.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/SegmentedButtonTest',
+    name: 'SegmentedButtonTest',
+    component: () => import('@/pages/SegmentedButtonTestPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/ToolbarTest',
+    name: 'ToolbarTest',
+    component: () => import('@/pages/ToolbarTest.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
