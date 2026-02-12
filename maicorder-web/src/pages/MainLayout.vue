@@ -26,6 +26,13 @@
         </div>
       </div>
 
+      <!-- 关闭按钮，仅在弹窗打开时显示 -->
+      <div v-if="isDialogOpen" class="close-button" @click="closeDialog">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </div>
+
       <!-- 底部功能按钮栏 -->
       <div class="bottom-buttons" v-if="!isDialogOpen">
         <button class="bottom-btn" @click="handleViewRecords">
@@ -64,9 +71,6 @@
           <span class="bottom-btn-text">退出登录</span>
         </button>
       </div>
-
-      <!-- 遮罩层，用于点击外部关闭弹窗 -->
-      <div v-if="isDialogOpen" class="dialog-backdrop" @click="handleBackdropClick"></div>
     </div>
   </BackGround>
 </template>
@@ -182,13 +186,6 @@ const closeDialog = () => {
   dialogSize.value = 200
 }
 
-// 点击遮罩层关闭弹窗
-const handleBackdropClick = (event) => {
-  if (event.target.classList.contains('dialog-backdrop')) {
-    closeDialog()
-  }
-}
-
 // 点击「勤了」按钮
 const handleCheckIn = () => {
   if (!isDialogOpen.value) {
@@ -263,6 +260,38 @@ const goToHomePage = () => {
   z-index: 2;
   position: relative;
   flex: 1;
+}
+
+/* 关闭按钮 */
+.close-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  color: #000;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.close-button:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 
 /* 底部按钮容器 */
@@ -435,18 +464,6 @@ const goToHomePage = () => {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 遮罩层 */
-.dialog-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: transparent;
-  z-index: 2;
-  cursor: pointer;
-}
-
 /* 响应式调整 */
 @media (max-width: 768px) {
   .page-title {
@@ -455,6 +472,13 @@ const goToHomePage = () => {
   
   .title-line {
     font-size: 1.4rem;
+  }
+  
+  .close-button {
+    top: 15px;
+    left: 15px;
+    width: 36px;
+    height: 36px;
   }
   
   .bottom-buttons {
@@ -502,6 +526,13 @@ const goToHomePage = () => {
   .title-line {
     font-size: 1.3rem;
     letter-spacing: 1px;
+  }
+  
+  .close-button {
+    top: 10px;
+    left: 10px;
+    width: 32px;
+    height: 32px;
   }
   
   .bottom-buttons {

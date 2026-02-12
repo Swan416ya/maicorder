@@ -79,9 +79,13 @@ const appLoading = ref(true);
 const dataLoading = ref(true);
 const checkIns = ref([]);
 
-// 处理 Card 点击跳转
+// 修改handleCardClick函数以支持外部链接
 const handleCardClick = (item) => {
-  if (item.route) {
+  if (item.externalLink) {
+    // 如果是外部链接，在新标签页打开
+    window.open(item.externalLink, '_blank');
+  } else if (item.route) {
+    // 如果是内部路由，则使用router导航
     router.push(item.route);
   }
 };
@@ -92,20 +96,27 @@ const backhome = () => {
 }
 
 
-// 模拟获取数据
 onMounted(() => {
   setTimeout(() => {
     checkIns.value = [
-      { id: 1, ToolName: '舞萌b50', location: 'TODO简介', status: '不可用',userCount:0,route:'/tool/wmB50Page' },
-      { id: 2, ToolName: '中二b45', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 3, ToolName: '歌曲查询', location: 'TODO简介', status: '不可用',userCount:0 },
-      { id: 4, ToolName: '音游神秘语录墙', location: '神秘语录大调查', status: '可用',userCount:0,route:'/tool/WordWallPage' },
-      { id: 5, ToolName: '拼好币群聊', location: 'TODO', status: '不可用',userCount:0, },
-      { id: 6, ToolName: '音游地图', location: 'TODO', status: '不可用',userCount:0, },
+      { id: 1, ToolName: '舞萌b50', location: 'TODO简介', status: '不可用', userCount: 0, route: '/tool/wmB50Page' },
+      { id: 2, ToolName: '中二b45', location: 'TODO简介', status: '不可用', userCount: 0 },
+      { id: 3, ToolName: '歌曲查询', location: 'TODO简介', status: '不可用', userCount: 0 },
+      { id: 4, ToolName: '音游神秘语录墙', location: '神秘语录大调查', status: '可用', userCount: 0, route: '/tool/WordWallPage' },
+      { 
+        id: 5, 
+        ToolName: '拼好币群聊', 
+        location: '仅广东',  // 改为"仅广东"
+        status: '可用',      // 改为"可用"
+        userCount: 0, 
+        externalLink: 'https://docs.qq.com/smartsheet/DWVNwdEVxZ0F5UExV'  // 添加外部链接
+      },
+      { id: 6, ToolName: '音游地图', location: 'TODO', status: '不可用', userCount: 0 },
     ];
     dataLoading.value = false;
   }, 2000);
 });
+
 </script>
 
 <style scoped>

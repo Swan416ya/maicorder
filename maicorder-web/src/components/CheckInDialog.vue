@@ -13,12 +13,12 @@
       <!-- 第一部分：时间与机厅 -->
       <div class="section-container">
         <div class="input-group">
-          <label class="geo-label">DATE / 日期</label>
+          <div class="geo-label-sbyqb">DATE / 日期</div>
           <input type="date" v-model="form.checkInDate" class="geo-input" />
         </div>
 
         <div class="input-group relative-container" ref="arcadeContainer">
-          <label class="geo-label">ARCADE / 机厅</label>
+          <div class="geo-label-sbyqb">ARCADE / 机厅</div>
           <input 
             type="text" 
             v-model="arcadeSearchQuery" 
@@ -117,11 +117,11 @@
               <!-- 右侧两个输入框 -->
               <div class="header-inputs-container">
                 <div class="geo-col">
-                  <label class="geo-label-mini">PC COUNT</label>
+                  <div class="geo-label-mini">PC COUNT</div>
                   <input type="number" v-model.number="session.pcCount" placeholder="0" class="geo-input-mini" />
                 </div>
                 <div class="geo-col">
-                  <label class="geo-label-mini">RATING</label>
+                  <div class="geo-label-mini">RATING</div>
                   <input type="text" v-model="session.currentRating" placeholder="Rating" class="geo-input-mini" />
                 </div>
               </div>
@@ -399,13 +399,19 @@ const submitCheckIn = async () => {
   letter-spacing: 1px;
   color: #000; 
 }
-.geo-label {
+.geo-label-sbyqb {
   font-size: 0.8rem;
   font-weight: 700;
   margin-bottom: 5px;
   display: block;
   text-transform: uppercase;
   color: #000;
+}
+
+.geo-input:focus {
+  background-color: #fff; /* 改为白色背景 */
+  border-color: #ccc; /* 改为灰色边框 */
+  box-shadow: none; /* 如果有阴影也去掉 */
 }
 
 /* Inputs */
