@@ -5,7 +5,7 @@
       <!-- 顶部标题 -->
       <div class="page-title">
         <div class="title-line">{{ userName }}</div>
-        <div class="title-line">今天勤了</div>
+        <div class="title-line">今天勤了吗</div>
       </div>
 
       <!-- 核心区域：圆形按钮/弹窗容器 -->
@@ -159,38 +159,49 @@ const calculateMaxDialogSize = () => {
     dialogSize.value = maxDialogSize.value
   }
 
-  // --- 核心修改区域 ---
-
-  // 1. 扩大有效直径
-  // 原来是 * 0.9 (留10%边距)，改为 * 0.98 (只留2%边距，几乎贴边)
-  // 注意：这里使用 maxDialogSize 计算，确保计算的是展开后的大小
+  // --- 修复内接长方形计算逻辑 ---
+  
+  // 圆的直径（使用98%以确保边缘显示）
   const diameter = maxDialogSize.value * 0.98
-
-  // 2. 宽度基准
-  // 保持 0.9，防止宽度太宽导致左右没空隙不好看
-  const screenRatioBase = 0.9
-
+  
+  // 设置一个合理的内接矩形最小高度（屏幕高度的60%）
+  const minHeightRatio = 0.6
+  const targetMinHeight = windowHeight * minHeightRatio
+  
   if (windowWidth > windowHeight) {
     // 横屏逻辑
-    let height = windowHeight * screenRatioBase
+    let height = windowHeight * 0.9
     // 保护逻辑：如果算出的高比直径还大，就限制为直径
     if (height > diameter) height = diameter
 
     contentHeight.value = Math.floor(height)
     contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
   } else {
-    // 竖屏逻辑（手机主要是这里）
-    let width = windowWidth * screenRatioBase
-    // 保护逻辑
-    if (width > diameter) width = diameter
-
-    contentWidth.value = Math.floor(width)
-    // 勾股定理算出最大高度：h = √(d² - w²)
-    contentHeight.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentWidth.value, 2)))
+    // 竖屏逻辑（手机主要模式）
+    // 优先计算一个合理的高度
+    let height = Math.min(windowHeight * 0.8, diameter * 0.8)
+    
+    // 确保高度不小于最小高度
+    if (height < targetMinHeight && targetMinHeight <= diameter) {
+      height = targetMinHeight
+    }
+    
+    // 计算对应的宽度
+    contentHeight.value = Math.floor(height)
+    contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
+    
+    // 确保宽度不会太大（不超过屏幕宽度的95%）
+    const maxWidth = windowWidth * 0.95
+    if (contentWidth.value > maxWidth) {
+      contentWidth.value = Math.floor(maxWidth)
+      // 根据宽度重新计算高度
+      contentHeight.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentWidth.value, 2)))
+    }
   }
-
-  // 3. 【关键】移除了原来最后的 contentHeight * 0.9
-  // 这样高度就会完全延伸到计算出的内接边界，不再有人为的上下留白
+  
+  console.log('屏幕:', windowWidth, 'x', windowHeight, 
+              '圆直径:', maxDialogSize.value, 
+              '内接矩形:', contentWidth.value, 'x', contentHeight.value)
 }
 
 // 窗口大小变化时重新计算
@@ -284,12 +295,12 @@ const moreTool = () => {
 }
 
 .check-btn-container {
-  width: 200px;
-  height: 200px;
+  width: 240px;  /* 从200px改为240px */
+  height: 240px;  /* 从200px改为240px */
   border-radius: 50%;
   background-color: #000;
   color: #fff;
-  font-size: 2rem;
+  font-size: 2.2rem;  /* 稍微增大字体 */
   font-weight: 600;
   display: flex;
   justify-content: center;
