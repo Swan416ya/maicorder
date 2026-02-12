@@ -1,8 +1,6 @@
 <template>
   <BackGround>
-    <StarTransition v-if="appLoading" @finished="appLoading = false" />
-
-    <div class="records-page-container" v-if="!appLoading">
+    <div class="records-page-container">
       <div class="fixed-header">
         <div class="nav-header">
           <button class="back-btn" @click="router.push('/main')">← BACK</button>
@@ -77,7 +75,6 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 import BackGround from '../components/BackGround.vue'
-import StarTransition from '../components/StarTransition.vue'
 import CardList from '../components/CardList.vue'
 import PurpleCard from '@/components/PurpleCard.vue'
 
@@ -89,7 +86,6 @@ import trafficImg from '@/assets/traffic.png'
 const router = useRouter()
 const checkIns = ref([])
 const loading = ref(true)
-const appLoading = ref(true)
 
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
@@ -300,7 +296,6 @@ onMounted(() => {
   word-break: break-word;
 }
 
-/* 删除原来的.comment-box样式 */
 .empty-box {
   text-align: center;
   padding: 40px;

@@ -1,13 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginLayout from '@/pages/LoginLayout.vue'
 import MainLayout from '@/pages/MainLayout.vue'
-// 假设你的记录页组件是这个名字，请确保文件存在
 import RecordsPage from '@/pages/RecordsPage.vue'
 import MoreToolPage from '@/pages/moreToolPage.vue'
 import TestPage from '@/pages/TestPage.vue'
-// import CardListExample from '@/components/CardListExample.vue'
-
-
 
 const routes = [
   {
@@ -18,8 +14,6 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: LoginLayout,
-    // 【关键修改】：标记此页面进入时不需要全局白屏过渡
-    // 这样你的 LoginLayout 自定义入场动画就能正常播放
     meta: { noGlobalTransition: true }
   },
   {
@@ -33,6 +27,14 @@ const routes = [
     name: 'Records',
     component: RecordsPage,
     meta: { requiresAuth: true }
+  },
+  {
+    // 添加记录详情页路由
+    path: '/checkin/detail/:id',
+    name: 'CheckInDetail',
+    component: () => import('@/pages/RecordDetailPage.vue'),
+    meta: { requiresAuth: true },
+    props: true // 将路由参数作为props传递给组件
   },
   {
     path: '/moreToolPage',
@@ -80,17 +82,13 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  // 获取目标路由是否需要登录权限
   const requiresAuth = to.meta.requiresAuth
 
   if (requiresAuth && !token) {
-    // 1. 需要登录但没 token -> 去登录页
     next('/login')
   } else if (to.path === '/login' && token) {
-    // 2. 已登录但想去登录页 -> 踢回主页
     next('/main')
   } else {
-    // 3. 其他情况 -> 放行
     next()
   }
 })
