@@ -144,7 +144,7 @@ import axios from 'axios'
 
 import BackGround from '../components/BackGround.vue'
 import CardList from '../components/CardList.vue'
-import PurpleCard from '@/components/PurpleCard.vue'
+import PurpleCard from '@/components/WordCard.vue'
 import CheckInCalendar from '@/components/CheckInCalendar.vue'
 
 import coinImg from '@/assets/coin.png'

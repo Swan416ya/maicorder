@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
-@TableName("sys_user") // 对应数据库表名
+@TableName("sys_user")
 public class User {
 
     @TableId(type = IdType.AUTO)
@@ -14,9 +14,9 @@ public class User {
     private String username;
     private String password;
     private String email;
+    private String apiKey;
     private LocalDateTime createTime;
 
-    // ================= Getter & Setter =================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUsername() { return username; }
@@ -25,6 +25,8 @@ public class User {
     public void setPassword(String password) { this.password = password; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    public String getApiKey() { return apiKey; }
+    public void setApiKey(String apiKey) { this.apiKey = apiKey; }
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
 }

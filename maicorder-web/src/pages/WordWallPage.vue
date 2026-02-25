@@ -63,7 +63,7 @@ import { ref, onMounted } from 'vue';
 import StarTransition from '@/components/StarTransition.vue';
 import BackGround from '@/components/BackGround.vue';
 import CardList from '@/components/CardList.vue';
-import PurpleCard from '@/components/PurpleCard.vue';
+import PurpleCard from '@/components/WordCard.vue';
 import PurpleFab from '@/components/PurpleFab.vue';
 import logoutIcon from '@/assets/logout.svg';
 import router from '@/router/index.js';

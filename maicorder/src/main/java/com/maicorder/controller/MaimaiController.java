@@ -1,5 +1,5 @@
 package com.maicorder.controller;
 
-public class MaimaiB50 {
+public class MaimaiController {
 //    TODO
 }

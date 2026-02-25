@@ -1,2 +1,4 @@
-package com.maicorder.config;public class RestTemplateConfig {
+package com.maicorder.config;
+
+public class RestTemplateConfig {
 }

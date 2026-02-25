@@ -4,3 +4,7 @@
     b50
   </div>
 </template>
+
+<script setup>
+
+</script>

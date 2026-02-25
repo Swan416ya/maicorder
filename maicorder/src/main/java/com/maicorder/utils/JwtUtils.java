@@ -16,11 +16,11 @@ import java.util.Date;
 @Component
 public class JwtUtils {
     // 密钥（建议放配置文件，长度至少32位）
-    @Value("${jwt.secret:maicorder_arcade_2024_secret_key_32bit}")
+    @Value("${jwt.secret:maicorder_arcade_2026_secret_key_32bit_daisukimiaoledor}")
     private String secret;
 
-    // Token过期时间：2小时（单位：毫秒）
-    @Value("${jwt.expire:7200000}")
+    // Token过期时间：无限
+    @Value("${jwt.expire:9223372036854775807}")
     private Long expire;
 
     // 生成Token

@@ -82,7 +82,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import PurpleCard from '@/components/PurpleCard.vue'
+import PurpleCard from '@/components/WordCard.vue'
 
 const props = defineProps({
   checkIns: {
