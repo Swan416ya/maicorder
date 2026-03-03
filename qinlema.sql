@@ -168,6 +168,7 @@ CREATE TABLE `sys_user` (
   `username` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
   `password` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT '密码(加密后)',
   `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '邮箱',
+  `api_key` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'API Key',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
@@ -178,12 +179,12 @@ CREATE TABLE `sys_user` (
 -- Dumping data for table `sys_user`
 --
 
-LOCK TABLES `sys_user` WRITE;
-/*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
-INSERT INTO `sys_user` VALUES (1,'Swan416','b51e8dbebd4ba8a8f342190a4b9f08d7','3447049424@qq.com','2026-02-02 16:42:02'),(2,'Swan416ya','3c55d1838c464bc6427a664096e043a2','1491229171@qq.com','2026-02-03 17:16:04');
-/*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- LOCK TABLES `sys_user` WRITE;
+-- /*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
+-- INSERT INTO `sys_user` VALUES (1,'Swan416','b51e8dbebd4ba8a8f342190a4b9f08d7','3447049424@qq.com',NULL,'2026-02-02 16:42:02'),(2,'Swan416ya','3c55d1838c464bc6427a664096e043a2','1491229171@qq.com',NULL,'2026-02-03 17:16:04');
+-- /*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
+-- UNLOCK TABLES;
+-- /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
