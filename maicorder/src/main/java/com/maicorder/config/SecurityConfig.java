@@ -37,12 +37,7 @@ public class SecurityConfig {
 
             // 配置请求授权 (cao默认为拦截!!!!)
             .authorizeHttpRequests(authorize -> authorize
-                // 允许匿名访问的接口
-                .requestMatchers("/api/login", "/api/register","api/arcades").permitAll()
-                // // 允许静态资源
-                // .requestMatchers("/error", "/static/**").permitAll()
-                // // 其他所有接口需要认证
-                // .anyRequest().authenticated()
+                    .anyRequest().permitAll()
             )
             
             // 配置无令牌时的处理

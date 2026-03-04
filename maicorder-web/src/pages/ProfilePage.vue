@@ -3,25 +3,16 @@
     <div class="profile-card">
       <!-- 头部区域 -->
       <div class="profile-header">
-        <div class="avatar-container">
-          <!-- 默认占位头像 -->
-          <div class="avatar">
-            {{ userInfo.username ? userInfo.username.charAt(0).toUpperCase() : 'U' }}
-          </div>
+        <div class="avatar">
+          {{ userInfo.username ? userInfo.username.charAt(0).toUpperCase() : 'U' }}
         </div>
         
-        <div class="header-actions">
-          <label class="md3-switch-label">
-            <span class="status-text">{{ isEditing ? '保存' : '编辑' }}</span>
-            <input type="checkbox" v-model="isEditing" class="md3-switch" />
-          </label>
-        </div>
+        <button @click="isEditing = !isEditing" class="edit-button">
+          {{ isEditing ? '保存' : '编辑' }}
+        </button>
       </div>
 
-      <div class="profile-title">
-        <h2>个人资料</h2>
-        <p>管理您的个人信息</p>
-      </div>
+      <h1 class="profile-title">个人资料</h1>
 
       <!-- 信息表单区域 -->
       <div class="profile-body">
@@ -42,7 +33,7 @@
         />
 
         <EditableInfoBar
-          label="api key"
+          label="API Key"
           v-model="userInfo.apikey"
           :edit="isEditing"
           :verify="false"
@@ -116,102 +107,74 @@ const rules = {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #F4F3F7; /* MD3 后台灰 */
-  font-family: 'Roboto', system-ui, sans-serif;
+  background-color: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .profile-card {
   width: 100%;
-  max-width: 480px;
-  background-color: #FEF7FF;
-  border-radius: 28px; /* MD3 大卡片圆角 */
-  padding: 32px;
-  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.05);
+  max-width: 400px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .profile-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 /* 头像样式 */
 .avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 40px;
-  background-color: #EADDFF;
-  color: #21005D;
-  font-size: 32px;
-  font-weight: bold;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  color: #333333;
+  font-size: 24px;
+  font-weight: 600;
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 2px solid #e0e0e0;
 }
 
-.profile-title h2 {
-  margin: 0;
-  font-size: 24px;
-  color: #1C1B1F;
+.profile-title {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  color: #333333;
   font-weight: 600;
+  text-align: center;
 }
 
-.profile-title p {
-  margin: 4px 0 24px 0;
+/* 简约风格按钮 */
+.edit-button {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #333333;
   font-size: 14px;
-  color: #49454F;
-}
-
-/* MD3 风格的原生 Checkbox 模拟 Switch */
-.md3-switch-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.status-text {
-  font-size: 14px;
-  color: #6750A4;
-  margin-right: 8px;
   font-weight: 500;
-}
-
-.md3-switch {
-  appearance: none;
-  width: 48px;
-  height: 24px;
-  background-color: #E7E0EC;
-  border-radius: 12px;
-  position: relative;
-  outline: none;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
 }
 
-.md3-switch::after {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 16px;
-  height: 16px;
-  background-color: #79747E;
-  border-radius: 50%;
-  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), background-color 0.3s;
+.edit-button:hover {
+  background-color: #f5f5f5;
+  border-color: #d0d0d0;
 }
 
-.md3-switch:checked {
-  background-color: #6750A4;
-}
-
-.md3-switch:checked::after {
-  transform: translateX(24px) scale(1.2);
-  background-color: #FFFFFF;
+.edit-button:active {
+  background-color: #e0e0e0;
 }
 
 .profile-body {
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 </style>
