@@ -63,6 +63,7 @@ const userInfo = reactive({
   phone: '-',
   password: '-',
   uid: '-',
+  apikey: '-',
 })
 
 // 初始化用户信息

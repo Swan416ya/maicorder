@@ -6,9 +6,12 @@ import com.maicorder.entity.User;
 import com.maicorder.mapper.UserMapper;
 import com.maicorder.utils.JwtUtils; // 确保你有这个JWT工具类
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.Authenticator;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -104,4 +107,65 @@ public class UserController {
 
         return Result.success(null);
     }
+
+
+    @GetMapping("/get-apikey")
+    public Result<String> getApiKey() {
+        try {
+            // 从 SecurityContext 中获取当前登录用户的认证信息
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            // 检查用户是否已登录
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return Result.fail(401, "用户未登录");
+            }
+
+            // 检查是否为匿名用户
+            Object principal = authentication.getPrincipal();
+            if (principal == null || "anonymousUser".equals(principal.toString())) {
+                return Result.fail(401, "用户未登录");
+            }
+
+            // 获取用户 ID（JWT 过滤器中设置的是 userId 作为 principal）
+            Long userId = null;
+            
+            // 处理不同类型的 principal
+            if (principal instanceof Long) {
+                userId = (Long) principal;
+            } else if (principal instanceof String) {
+                try {
+                    // 尝试将 String 转换为 Long
+                    userId = Long.parseLong((String) principal);
+                } catch (NumberFormatException e) {
+                    return Result.fail(401, "无效的用户身份信息");
+                }
+            } else {
+                return Result.fail(401, "无效的用户身份信息");
+            }
+            
+            System.out.println("User ID: " + userId);
+
+            // 查询用户信息
+            User user = userMapper.selectById(userId);
+            if (user == null) {
+                return Result.fail(404, "用户不存在");
+            }
+
+            // 获取 API Key
+            String apiKey = user.getApiKey();
+            if (apiKey == null || apiKey.isEmpty()) {
+                return Result.fail(400, "API Key 未设置");
+            }
+
+            // 返回 API Key
+            return Result.success(apiKey);
+        } catch (Exception e) {
+//            e.printStackTrace();
+            return Result.fail(500, "获取 API Key 失败：" + e.getMessage());
+        }
+
+    }
+    //TODO 实现更新 API Key 接口
+//    @PostMapping("/update-apikey")
+//    public Result<Void> updateApiKey(@RequestBody Map<String, String> updateParam) {}
 }
