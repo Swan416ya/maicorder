@@ -37,6 +37,7 @@ public class SecurityConfig {
 
             // 配置请求授权 (cao默认为拦截!!!!)
             .authorizeHttpRequests(authorize -> authorize
+//                    .requestMatchers("/api/get-apikey","/api/update-apikey").authenticated()
                     .anyRequest().permitAll()
             )
             

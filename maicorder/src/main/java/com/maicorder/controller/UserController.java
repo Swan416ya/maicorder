@@ -5,6 +5,7 @@ import com.maicorder.common.Result; // 确保你有这个统一返回类
 import com.maicorder.entity.User;
 import com.maicorder.mapper.UserMapper;
 import com.maicorder.utils.JwtUtils; // 确保你有这个JWT工具类
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import java.net.Authenticator;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController // 标记为REST接口控制器
 @RequestMapping("/api") // 类路径前缀，所以接口路径是/api/xxx
@@ -59,6 +61,18 @@ public class UserController {
         // 6. 生成JWT Token
         String token = jwtUtils.generateToken(user.getId(), user.getUsername());
         System.out.println("生成的Token：" + token); // 看后端控制台是否有token输出
+        
+        // 解析Token并输出内容
+        try {
+            Claims claims = jwtUtils.parseToken(token);
+            System.out.println("解析Token结果：");
+            System.out.println("  userId: " + claims.get("userId"));
+            System.out.println("  username: " + claims.get("username"));
+            System.out.println("  签发时间: " + claims.getIssuedAt());
+            System.out.println("  过期时间: " + claims.getExpiration());
+        } catch (Exception e) {
+            System.out.println("解析Token失败：" + e.getMessage());
+        }
 
         // 7. 构造返回结果
         Map<String, Object> resultData = new HashMap<>();
@@ -110,11 +124,30 @@ public class UserController {
 
 
     @GetMapping("/get-apikey")
-    public Result<String> getApiKey() {
+    public Result<String> getApiKey(HttpServletRequest request) {
+        System.out.println("getapikey--------------");
         try {
+            System.out.println("in try 1");
             // 从 SecurityContext 中获取当前登录用户的认证信息
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
+            // 从请求头中获取token并解析
+            String authorizationHeader = request.getHeader("Authorization");
+            System.out.println("Authorization: " + authorizationHeader);
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                String token = authorizationHeader.substring(7);
+                System.out.println("token: " + token);
+                try {
+                    Claims claims = jwtUtils.parseToken(token);
+                    System.out.println("更新API Key时解析Token结果：");
+                    System.out.println("  userId: " + claims.get("userId"));
+                    System.out.println("  username: " + claims.get("username"));
+                    System.out.println("  签发时间: " + claims.getIssuedAt());
+                    System.out.println("  过期时间: " + claims.getExpiration());
+                } catch (Exception e) {
+                    System.out.println("更新API Key时解析Token失败：" + e.getMessage());
+                }
+            }
+            
             // 检查用户是否已登录
             if (authentication == null || !authentication.isAuthenticated()) {
                 return Result.fail(401, "用户未登录");
@@ -123,26 +156,11 @@ public class UserController {
             // 检查是否为匿名用户
             Object principal = authentication.getPrincipal();
             if (principal == null || "anonymousUser".equals(principal.toString())) {
-                return Result.fail(401, "用户未登录");
+                return Result.fail(402, "用户未登录");
             }
 
             // 获取用户 ID（JWT 过滤器中设置的是 userId 作为 principal）
-            Long userId = null;
-            
-            // 处理不同类型的 principal
-            if (principal instanceof Long) {
-                userId = (Long) principal;
-            } else if (principal instanceof String) {
-                try {
-                    // 尝试将 String 转换为 Long
-                    userId = Long.parseLong((String) principal);
-                } catch (NumberFormatException e) {
-                    return Result.fail(401, "无效的用户身份信息");
-                }
-            } else {
-                return Result.fail(401, "无效的用户身份信息");
-            }
-            
+            Long userId = (Long) principal;
             System.out.println("User ID: " + userId);
 
             // 查询用户信息
@@ -163,9 +181,120 @@ public class UserController {
 //            e.printStackTrace();
             return Result.fail(500, "获取 API Key 失败：" + e.getMessage());
         }
+    }
+
+
+    // 更新 API Key 接口
+//    @PostMapping("/update-apikey")
+//    public Result<String> updateApiKey(@RequestBody Map<String, String> updateParam, HttpServletRequest request) {
+//        String apiKey = updateParam.get("apiKey");
+//        System.out.println(apiKey);
+//
+//        // TODO 校验参数
+//        if (apiKey == null || apiKey.trim().isEmpty()) {
+//            return Result.fail(400, "API Key 不能为空");
+//        }
+//        //修改用户apiKey
+//        // 从 SecurityContext 中获取当前登录用户的认证信息
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        // 检查用户是否已登录
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return Result.fail(401, "用户未登录");
+//        }
+//        // 检查是否为匿名用户
+//        Object principal = authentication.getPrincipal();
+//        if (principal == null || "anonymousUser".equals(principal.toString())) {
+//            return Result.fail(402, "用户未登录");
+//        }
+//        // 获取用户 ID（JWT 过滤器中设置的是 userId 作为 principal）
+//        Long userId = (Long) principal;
+//        System.out.println("User ID: " + userId);
+//        // 查询用户信息
+//        User user = userMapper.selectById(userId);
+//        if (user == null) {
+//            return Result.fail(404, "用户不存在");
+//        }
+//        // 更新 API Key
+//        user.setApiKey(apiKey);
+//        userMapper.updateById(user);
+//        return Result.success(apiKey);
+//    }
+
+    // 更新用户信息接口
+    @PostMapping("/update-user")
+    public Result<Map<String, Object>> updateUser(@RequestBody Map<String, String> updateParam) {
+        System.out.println("updateParam---------- "+updateParam);
+        // 从 SecurityContext 中获取当前登录用户的认证信息
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 检查用户是否已登录
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Result.fail(401, "用户未登录");
+        }
+        // 检查是否为匿名用户
+        Object principal = authentication.getPrincipal();
+        if (principal == null || "anonymousUser".equals(principal.toString())) {
+            return Result.fail(402, "用户未登录");
+        }
+        // 获取用户 ID
+        Long userId = (Long) principal;
+        System.out.println("Update User ID: " + userId);
+        
+        // 查询用户信息
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.fail(404, "用户不存在");
+        }
+//
+//        // 更新用户信息
+//        if (updateParam.containsKey("username")) {
+//            String username = updateParam.get("username");
+//            if (username != null && !username.trim().isEmpty()) {
+//                user.setUsername(username);
+//            }
+//        }
+//
+        if (updateParam.containsKey("email")) {
+            String email = updateParam.get("email");
+            if (email != null) {
+                user.setEmail(email);
+            }
+        }
+//
+        if (updateParam.containsKey("password")) {
+            String password = updateParam.get("password");
+            if (password != null && !password.trim().isEmpty()) {
+                // 密码加密
+                String salt = "arcade_" + user.getUsername();
+                String encryptPassword = DigestUtils.md5DigestAsHex((salt + password).getBytes(StandardCharsets.UTF_8));
+                user.setPassword(encryptPassword);
+            }
+        }
+//
+        // 检查 apiKey（支持 apikey 和 apiKey 两种键名）
+        String apiKey = null;
+        if (updateParam.containsKey("apiKey")) {
+            apiKey = updateParam.get("apiKey");
+        } else if (updateParam.containsKey("apikey")) {
+            apiKey = updateParam.get("apikey");
+        }
+        
+        if (apiKey != null && !apiKey.trim().isEmpty()) {
+            System.out.println(apiKey);
+            user.setApiKey(apiKey);
+        }
+        
+        // 保存更新
+        userMapper.updateById(user);
+//
+//        // 构造返回结果
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("id", user.getId());
+        userInfo.put("username", user.getUsername());
+        userInfo.put("email", user.getEmail());
+        userInfo.put("apiKey", user.getApiKey());
+
+        return Result.success(userInfo);
+//        return Result.success(null);
 
     }
-    //TODO 实现更新 API Key 接口
-//    @PostMapping("/update-apikey")
-//    public Result<Void> updateApiKey(@RequestBody Map<String, String> updateParam) {}
 }

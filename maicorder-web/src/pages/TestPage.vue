@@ -27,7 +27,7 @@
               @click="openEdit(key)"
             >
               <!-- 标签：显示字段名的大写形式 -->
-              <span class="label">> {{ key.toUpperCase() }}:</span>
+              <span class="label">> {{ key }}:</span>
               <!-- 值：显示当前字段的值（带有打字机效果） -->
               <span class="value">{{ item.visibleValue }}</span>
               <!-- 小光标：仅在打字时显示，增强终端感 -->
@@ -48,6 +48,12 @@
       </div>
       <div class="image-label">> SYSTEM_IMAGE</div>
     </div> -->
+
+    <!-- 返回主页按钮：左下角固定位置 -->
+    <div class="back-home-btn" @click="goHome">
+      <span class="btn-icon"><<</span>
+      <span class="btn-text">RETURN_HOME</span>
+    </div>
 
     <!-- 编辑弹窗：使用Vue Transition实现淡入淡出动画 -->
     <Transition name="fade">
@@ -72,8 +78,10 @@
           </div>
           <!-- 弹窗底部：操作按钮 -->
           <div class="modal-footer">
-            <button @click="handleSave" class="btn">[ COMMIT ]</button>
-            <button @click="isEditing = false" class="btn">[ ABORT ]</button>
+            <button @click="handleSave" class="btn" :disabled="isLoading">
+              {{ isLoading ? '[ 处理中... ]' : '[ 确认 ]' }}
+            </button>
+            <button @click="isEditing = false" class="btn" :disabled="isLoading">[ 取消 ]</button>
           </div>
         </div>
       </div>
@@ -93,8 +101,11 @@
  */
 
 import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 // import localStorage from '@/utils/localStorage';
+
+const router = useRouter();
 /**
  * 用户资料数据
  * 使用reactive创建响应式对象，存储所有用户信息的原始数据
@@ -108,6 +119,7 @@ const profile = reactive({
   maicorderApiKey:''
 });
 const initProfile = async () => {
+
   // 从localStorage获取token
   profile.maicorderApiKey = localStorage.getItem("token") || "maicorder-api-key";
   
@@ -135,6 +147,7 @@ const initProfile = async () => {
   
   // 密码始终使用默认的掩码值
   profile.password = "************";
+
   
   // 从后端获取API Key
   try {
@@ -145,11 +158,15 @@ const initProfile = async () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
       if (response.data.code === 200 && response.data.data) {
         profile.apikey = response.data.data;
         // 可选：将获取的API Key存储到localStorage
         localStorage.setItem("apikey", response.data.data);
+      }
+      else {
+        profile.apikey = response.data.message;
+        // 可选：将获取的API Key存储到localStorage
+        localStorage.setItem("apikey", response.data.message);
       }
     }
   } catch (error) {
@@ -186,6 +203,9 @@ const editValue = ref('');
 
 // 错误提示信息
 const errorMessage = ref('');
+
+// 加载状态
+const isLoading = ref(false);
 
 // 编辑输入框的DOM引用（用于自动聚焦）
 const editInput = ref(null);
@@ -224,7 +244,7 @@ onMounted(async () => {
     const value = String(profile[key]);
     for (let i = 0; i <= value.length; i++) {
       displayInfo[key].visibleValue = value.substring(0, i);
-      await sleep(30);  // 列表项打字速度更快（30ms）
+      await sleep(10);  // 列表项打字速度更快（30ms）
     }
     
     // 打字完成，隐藏光标
@@ -253,19 +273,84 @@ const openEdit = (key) => {
  * 保存编辑内容
  * 验证输入内容并更新数据
  */
-const handleSave = () => {
+const handleSave = async () => {
   // 验证：不能为空
   if (!editValue.value) { 
     errorMessage.value = "EMPTY_FIELD"; 
     return; 
   }
   
-  // 更新数据
-  profile[currentEditKey.value] = editValue.value;
-  displayInfo[currentEditKey.value].visibleValue = editValue.value;
+  // 防止重复提交
+  if (isLoading.value) return;
   
-  // 关闭弹窗
-  isEditing.value = false;
+  try {
+    isLoading.value = true;
+    errorMessage.value = '';
+    
+    // 构建请求参数
+    const updateParam = {};
+    updateParam[currentEditKey.value] = editValue.value;
+    
+    // 调用后端API
+    const token = localStorage.getItem("token");
+    const response = await axios.post('/api/update-user', updateParam, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.data.code === 200 && response.data.data) {
+      // 更新本地数据
+      profile[currentEditKey.value] = editValue.value;
+      displayInfo[currentEditKey.value].visibleValue = editValue.value;
+      
+      // 更新localStorage中的用户信息
+      if (currentEditKey.value === 'username' || currentEditKey.value === 'email') {
+        const currentUserStr = localStorage.getItem("currentUser");
+        if (currentUserStr) {
+          const currentUser = JSON.parse(currentUserStr);
+          currentUser[currentEditKey.value] = editValue.value;
+          localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        }
+      }
+      
+      // 关闭弹窗
+      isEditing.value = false;
+    } else {
+      errorMessage.value = response.data.message || "UPDATE_FAILED";
+    }
+  } catch (error) {
+    console.error('更新用户信息失败：', error);
+    errorMessage.value = "NETWORK_ERROR";
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+/**
+ * 返回主页
+ */
+const goHome = () => {
+  const token = localStorage.getItem('token');
+  // 先停止所有打字机动画，避免内存泄漏
+  stopAllTyping();
+  
+  if (token) {
+    router.push('/main');
+  } else {
+    router.push('/login');
+  }
+};
+
+/**
+ * 停止所有打字机动画
+ */
+const stopAllTyping = () => {
+  // 重置所有打字状态
+  for (const key in displayInfo) {
+    displayInfo[key].isTyping = false;
+  }
 };
 </script>
 
@@ -358,6 +443,10 @@ const handleSave = () => {
   cursor: pointer;
   border-bottom: 1px solid transparent;
   transition: all 0.3s;
+  max-width: 100%; /* 限制不超过父容器 */
+  overflow: hidden; /* 隐藏溢出内容 */
+  word-wrap: break-word; /* 长单词换行 */
+  word-break: break-all; /* 强制换行 */
 }
 
 /* 悬停效果：背景高亮+左侧缩进 */
@@ -370,7 +459,19 @@ const handleSave = () => {
 /* 标签样式：半透明绿色 */
 .label { 
   color: rgba(51, 255, 51, 0.5); 
-  margin-right: 1rem; 
+  margin-right: 1rem;
+  white-space: nowrap; /* 标签不换行 */
+  flex-shrink: 0; /* 标签不收缩 */
+}
+
+/* 值样式：限制长度并换行 */
+.value {
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  max-width: calc(100% - 120px); /* 减去标签宽度 */
+  display: inline-block;
+  vertical-align: top;
 }
 
 /**
@@ -468,9 +569,16 @@ const handleSave = () => {
 }
 
 /* 按钮悬停效果：反色显示 */
-.btn:hover { 
+.btn:hover:not(:disabled) { 
   background: #33ff33; 
   color: #000; 
+}
+
+/* 禁用状态的按钮 */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: rgba(51, 255, 51, 0.5);
 }
 
 /* 淡入淡出过渡动画 */
@@ -479,5 +587,40 @@ const handleSave = () => {
 }
 .fade-enter-from, .fade-leave-to { 
   opacity: 0; 
+}
+
+/* 返回主页按钮：左下角固定位置 */
+.back-home-btn {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid #33ff33;
+  background: rgba(0, 17, 0, 0.8);
+  color: #33ff33;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.back-home-btn:hover {
+  background: #33ff33;
+  color: #000;
+  box-shadow: 0 0 20px rgba(51, 255, 51, 0.5);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+  letter-spacing: -2px;
+}
+
+.btn-text {
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 </style>
