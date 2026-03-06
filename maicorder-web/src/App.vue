@@ -13,11 +13,9 @@ const transitionName = computed(() => {
     <router-view v-slot="{ Component }">
       <transition 
         :name="transitionName" 
-        mode="out-in"
         appear
-        @after-enter="() => {}"
       >
-        <component :is="Component" :key="route.fullPath" />
+        <component :is="Component" :key="route.fullPath" class="page-transition-container" />
       </transition>
     </router-view>
   </div>
@@ -40,12 +38,25 @@ body, html {
 #app {
   width: 100vw;
   height: 100vh;
-  overflow: auto;
+  overflow: hidden; /* 防止过渡期间出现滚动条 */
+  position: relative;
 }
 
-.fade-white-enter-active,
+.page-transition-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fade-white-enter-active {
+  transition: opacity 0.3s ease-in-out;
+  z-index: 2;
+}
 .fade-white-leave-active {
-  transition: opacity 0.6s ease;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 1;
 }
 .fade-white-enter-from,
 .fade-white-leave-to {

@@ -125,7 +125,6 @@ public class UserController {
 
     @GetMapping("/get-apikey")
     public Result<String> getApiKey(HttpServletRequest request) {
-        System.out.println("getapikey--------------");
         try {
             System.out.println("in try 1");
             // 从 SecurityContext 中获取当前登录用户的认证信息
@@ -142,8 +141,7 @@ public class UserController {
                     System.out.println("  userId: " + claims.get("userId"));
                     System.out.println("  username: " + claims.get("username"));
                     System.out.println("  签发时间: " + claims.getIssuedAt());
-                    System.out.println("  过期时间: " + claims.getExpiration());
-                } catch (Exception e) {
+                    System.out.println("  过期时间: " + claims.getExpiration());                } catch (Exception e) {
                     System.out.println("更新API Key时解析Token失败：" + e.getMessage());
                 }
             }
@@ -223,7 +221,6 @@ public class UserController {
     // 更新用户信息接口
     @PostMapping("/update-user")
     public Result<Map<String, Object>> updateUser(@RequestBody Map<String, String> updateParam) {
-        System.out.println("updateParam---------- "+updateParam);
         // 从 SecurityContext 中获取当前登录用户的认证信息
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // 检查用户是否已登录
@@ -244,15 +241,6 @@ public class UserController {
         if (user == null) {
             return Result.fail(404, "用户不存在");
         }
-//
-//        // 更新用户信息
-//        if (updateParam.containsKey("username")) {
-//            String username = updateParam.get("username");
-//            if (username != null && !username.trim().isEmpty()) {
-//                user.setUsername(username);
-//            }
-//        }
-//
         if (updateParam.containsKey("email")) {
             String email = updateParam.get("email");
             if (email != null) {
@@ -294,7 +282,6 @@ public class UserController {
         userInfo.put("apiKey", user.getApiKey());
 
         return Result.success(userInfo);
-//        return Result.success(null);
 
     }
 }

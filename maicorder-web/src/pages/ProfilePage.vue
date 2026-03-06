@@ -51,7 +51,7 @@
 
     <!-- 返回主页按钮：左下角固定位置 -->
     <div class="back-home-btn" @click="goHome">
-      <span class="btn-icon"><<</span>
+      <span class="btn-icon"></span>
       <span class="btn-text">RETURN_HOME</span>
     </div>
 
@@ -100,12 +100,19 @@
  * 4. 终端视觉风格：绿色主题、闪烁光标、扫描线等黑客元素
  */
 
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 // import localStorage from '@/utils/localStorage';
 
 const router = useRouter();
+
+// 组件运行状态标志
+const isActive = ref(true);
+
+onUnmounted(() => {
+  isActive.value = false;
+});
 /**
  * 用户资料数据
  * 使用reactive创建响应式对象，存储所有用户信息的原始数据
@@ -229,20 +236,25 @@ onMounted(async () => {
   // 初始化用户信息，包括从后端获取API Key
   await initProfile();
   
+  if (!isActive.value) return;
+
   // 标题打字动画：逐字显示用户名
   for (let i = 0; i <= profile.username.length; i++) {
+    if (!isActive.value) break;
     typedName.value = profile.username.substring(0, i);
     await sleep(80);  // 每个字符间隔80ms
   }
   
   // 列表项打字动画：逐个字段显示
   for (const key in profile) {
+    if (!isActive.value) break;
     // 标记为正在打字，显示小光标
     displayInfo[key].isTyping = true;
     
     // 逐字显示当前字段的值
     const value = String(profile[key]);
     for (let i = 0; i <= value.length; i++) {
+      if (!isActive.value) break;
       displayInfo[key].visibleValue = value.substring(0, i);
       await sleep(10);  // 列表项打字速度更快（30ms）
     }
@@ -337,11 +349,11 @@ const goHome = () => {
   stopAllTyping();
   
   if (token) {
-    // router.push('/main');
-    window.location.href = '/main';
+    router.push('/main');
+    // window.location.href = '/main';
   } else {
-    // router.push('/login');
-    window.location.href = '/login';
+    router.push('/login');
+    // window.location.href = '/login';
   }
 };
 
