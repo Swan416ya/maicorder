@@ -40,13 +40,13 @@ const routes = [
     path: '/moreToolPage',
     name: 'MoreToolPage',
     component: MoreToolPage,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/test',
     name: 'Test',
     component: TestPage,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/tool/WordWallPage',
@@ -64,7 +64,7 @@ const routes = [
     path: '/tool/badgePage',
     name: 'BadgePage',
     component: () => import('@/pages/badgePage.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/SegmentedButtonTest',
@@ -76,7 +76,7 @@ const routes = [
     path: '/ToolbarTest',
     name: 'ToolbarTest',
     component: () => import('@/pages/ToolbarTest.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/profile',
