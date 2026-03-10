@@ -11,8 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.Authenticator;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;

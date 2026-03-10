@@ -112,6 +112,7 @@ onMounted(() => {
         externalLink: 'https://docs.qq.com/smartsheet/DWVNwdEVxZ0F5UExV'  // 添加外部链接
       },
       { id: 6, ToolName: '音游地图', location: 'TODO', status: '不可用', userCount: 0 },
+      { id: 6, ToolName: '吧唧展示|BadgeLab', location: '', status: '可用', userCount: 1145,route: '/tool/badgePage' },
     ];
     dataLoading.value = false;
   }, 2000);

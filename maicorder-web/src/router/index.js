@@ -61,6 +61,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/tool/badgePage',
+    name: 'BadgePage',
+    component: () => import('@/pages/badgePage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/SegmentedButtonTest',
     name: 'SegmentedButtonTest',
     component: () => import('@/pages/SegmentedButtonTestPage.vue'),
