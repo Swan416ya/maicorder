@@ -2,6 +2,7 @@ package com.maicorder.controller;
 
 import com.maicorder.common.Result;
 import com.maicorder.entity.Arcade;
+import com.maicorder.mapper.ArcadeMapper;
 import com.maicorder.service.ArcadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ public class ArcadeController {
     // 1. 替换注入：从 ArcadeMapper 改为 ArcadeService（业务逻辑交给Service层）
     @Autowired
     private ArcadeService arcadeService;
+    @Autowired private ArcadeMapper arcadeMapper;
 
     // ========== 原有接口（保留，不影响旧功能） ==========
     @GetMapping
@@ -44,5 +46,17 @@ public class ArcadeController {
         Map<Long, String> nameMap = arcadeService.getArcadeNameMapByIds(arcadeIds);
         // 返回结果（用Result.success适配你的统一返回格式）
         return Result.success(nameMap);
+    }
+
+    @PostMapping("/add-arcade")
+    public Result<Arcade> addArcade(@RequestBody Arcade arcade) {
+        //
+        System.out.println(arcade);
+        try {
+            arcadeMapper.insert(arcade);
+        } catch (Exception e) {
+            return Result.fail(500, "添加机厅失败");
+        }
+        return Result.success(arcade);
     }
 }

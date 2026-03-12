@@ -37,7 +37,9 @@
             </li>
           </ul>
           <ul class="geo-dropdown" v-if="showArcadeList && filteredArcades.length === 0 && arcadeSearchQuery">
-            <li class="disabled">未找到匹配的机厅</li>
+            <li class="add-arcade" @click="showAddArcadeDialog = true">
+              未找到匹配的机厅,点击添加机厅
+            </li>
           </ul>
         </div>
       </div>
@@ -167,6 +169,53 @@
           SUBMIT / 提交记录
         </button>
       </div>
+
+      <!-- 添加机厅弹窗 -->
+      <div v-if="showAddArcadeDialog" class="add-arcade-modal" @click.self="showAddArcadeDialog = false">
+        <div class="modal-content">
+          <h3>添加新机厅</h3>
+          <div class="form-group">
+            <label>机厅名称 <span class="required">*</span></label>
+            <input v-model="newArcade.name" placeholder="请输入机厅名称" class="geo-input" />
+          </div>
+          <div class="form-group">
+            <label>详细地址</label>
+            <input v-model="newArcade.address" placeholder="请输入详细地址" class="geo-input" />
+          </div>
+          <div class="form-row">
+            <div class="form-group half">
+              <label>省</label>
+              <input v-model="newArcade.province" placeholder="如：北京市" class="geo-input" />
+            </div>
+            <div class="form-group half">
+              <label>市</label>
+              <input v-model="newArcade.city" placeholder="如：北京市" class="geo-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>区/县</label>
+            <input v-model="newArcade.district" placeholder="如：朝阳区" class="geo-input" />
+          </div>
+          <div class="form-row">
+            <div class="form-group half">
+              <label>纬度</label>
+              <input v-model.number="newArcade.latitude" type="number" step="0.000001" placeholder="可选" class="geo-input" />
+            </div>
+            <div class="form-group half">
+              <label>经度</label>
+              <input v-model.number="newArcade.longitude" type="number" step="0.000001" placeholder="可选" class="geo-input" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button @click="addArcade" class="geo-submit-btn" :disabled="!newArcade.name.trim() || isAddingArcade">
+              {{ isAddingArcade ? '添加中...' : '确认添加' }}
+            </button>
+            <button @click="showAddArcadeDialog = false" class="geo-outline-btn" :disabled="isAddingArcade">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -202,6 +251,17 @@ const arcades = ref([])
 const showArcadeList = ref(false)
 const arcadeSearchQuery = ref('')
 const arcadeContainer = ref(null)
+const showAddArcadeDialog = ref(false)
+const isAddingArcade = ref(false)
+const newArcade = ref({
+  name: '',
+  address: '',
+  province: '',
+  city: '',
+  district: '',
+  latitude: null,
+  longitude: null
+})
 
 const form = ref({
   arcadeId: '',
@@ -329,6 +389,47 @@ const submitCheckIn = async () => {
     console.error(error)
     const msg = error.response?.data?.message || '未知错误'
     alert(`提交失败：${msg}`)
+  }
+}
+
+const addArcade = async () => {
+  if (!newArcade.value.name.trim()) {
+    alert('请输入机厅名称,厅名称不能为空')
+    return
+  }
+
+  isAddingArcade.value = true
+  try {
+    const response = await axios.post('/api/arcades/add-arcade', newArcade.value);
+    if (response.data.code === 200) {
+      alert('✅ 添加成功！')
+      await fetchArcades()
+      // 自动选择新机厅
+      const addedArcade = response.data.data
+      if (addedArcade) {
+        selectArcade(addedArcade)
+      }
+      showAddArcadeDialog.value = false
+      // 重置表单
+      newArcade.value = {
+        name: '',
+        address: '',
+        province: '',
+        city: '',
+        district: '',
+        latitude: null,
+        longitude: null
+      }
+    } else {
+      const msg = response.data.message || '添加失败'
+      alert(`添加失败：${msg}`)
+    }
+  } catch (error) {
+    console.error(error)
+    const msg = error.response?.data?.message || '未知错误'
+    alert(`添加失败：${msg}`)
+  } finally {
+    isAddingArcade.value = false
   }
 }
 </script>
@@ -683,4 +784,83 @@ const submitCheckIn = async () => {
 
 .geo-dropdown::-webkit-scrollbar { width: 4px; }
 .geo-dropdown::-webkit-scrollbar-thumb { background: #ccc; }
+
+/* 添加机厅弹窗样式 */
+.add-arcade-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  color: #333;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #000;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form-group.half {
+  flex: 1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.required {
+  color: #ff4d4f;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+/* 添加机厅选项样式 */
+.add-arcade {
+  color: #4cc9f0;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  padding: 12px;
+}
+
+.add-arcade:hover {
+  background: rgba(76, 201, 240, 0.1);
+  padding-left: 20px;
+}
 </style>
