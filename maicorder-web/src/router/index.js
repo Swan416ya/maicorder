@@ -84,6 +84,12 @@ const routes = [
     component: () => import('@/pages/ProfilePage.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path:'/github',
+    name: 'Github',
+    component: () => import('@/pages/githubPage.vue'),
+    meta: { requiresAuth: false }
+  }
 ]
 
 const router = createRouter({

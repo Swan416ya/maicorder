@@ -485,21 +485,22 @@ const goToHomePage = () => {
     gap: 12px;
     padding: 10px 20px;
     bottom: 30px;
+    max-width: 95vw;
   }
   
   .bottom-btn {
-    min-width: 70px;
+    min-width: 65px;
     padding: 8px 12px;
   }
   
   .bottom-btn-icon {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     margin-bottom: 4px;
   }
   
   .bottom-btn-text {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
   
   .check-btn-container {
@@ -540,21 +541,22 @@ const goToHomePage = () => {
     padding: 8px 16px;
     bottom: 20px;
     border-radius: 40px;
+    max-width: 95vw;
   }
   
   .bottom-btn {
-    min-width: 60px;
+    min-width: 50px;
     padding: 6px 8px;
   }
   
   .bottom-btn-icon {
-    width: 18px;
-    height: 18px;
-    margin-bottom: 3px;
+    width: 16px;
+    height: 16px;
+    margin-bottom: 2px;
   }
   
   .bottom-btn-text {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
   
   .check-btn-container {
@@ -567,11 +569,10 @@ const goToHomePage = () => {
     padding: 15px 8px;
   }
   
-  /* 在小屏幕上隐藏分隔线，改为堆叠 */
+  /* 在小屏幕上缩小按钮而不是折叠 */
   .bottom-buttons {
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 90vw;
+    flex-wrap: nowrap;
+    justify-content: space-around;
   }
   
   .bottom-btn:not(:last-child)::after {
