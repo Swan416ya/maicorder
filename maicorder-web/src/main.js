@@ -1,11 +1,13 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import { shouldEnableOffline, enableOfflineMock, setOfflineAuth } from '@/utils/offlineMock'
 
-// 新增：验证main.js是否执行
-console.log('===== main.js 开始执行 =====')
-console.log('App组件：', App)
-console.log('路由：', router)
+// 离线模式：不连后端即可查看所有页面样式（npm run dev:offline 或 ?offline=1）
+if (shouldEnableOffline()) {
+  enableOfflineMock()
+  setOfflineAuth()
+}
 
 const app = createApp(App)
 app.use(router)

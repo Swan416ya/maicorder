@@ -31,6 +31,17 @@ npm install
 npm run dev
 ```
 
+### 离线模式（不连后端看所有页面样式）
+
+不启动后端时，可用离线模式单独跑前端，查看各页面样式与布局：
+
+```sh
+npm run dev:offline
+```
+
+或在正常 `npm run dev` 下访问带参数的地址：`http://localhost:8081/?offline=1`。  
+离线模式下会使用本地 Mock 数据，并自动写入“已登录”状态，可直接在应用内跳转登录页、主页、履历、记录详情、个人页等所有路由。
+
 ### Compile and Minify for Production
 
 ```sh
