@@ -1,10 +1,12 @@
 package com.maicorder.entity;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.util.List;
 
 @Data
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Best50Data {
     // JSON 中是数字类型，建议用 Integer 而非 String
     private Integer rating;
@@ -26,6 +28,7 @@ public class Best50Data {
     private List<Score> scoresB15;
 
     @Data
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class Score {
         private Integer id;
         private String level;
