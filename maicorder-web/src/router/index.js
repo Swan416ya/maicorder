@@ -8,7 +8,7 @@ import TestPage from '@/pages/TestPage.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/moreToolPage'
   },
   {
     path: '/login',
@@ -58,7 +58,7 @@ const routes = [
     path: '/tool/wmB50Page',
     name: 'wmB50Page',
     component: () => import('@/pages/wmB50Page.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: false }
   },
   {
     path: '/tool/badgePage',

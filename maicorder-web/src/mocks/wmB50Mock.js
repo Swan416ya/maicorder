@@ -1,0 +1,81 @@
+export const targetDx = [
+  { level: '13', title: 'シュガーホリック', achievement: 100.6148 },
+  { level: '13', title: 'メイトなやつら（FEAT. 天開司, 佐藤ホームズ, あっくん大魔王 & 歌衣メイカ）', achievement: 100.7790 },
+  { level: '13', title: 'プリズム△▽リズム', achievement: 100.6673 },
+  { level: '12+', title: 'ザムザ', achievement: 100.8172 },
+  { level: '12+', title: 'QuiQ', achievement: 100.7708 },
+  { level: '13', title: '氷滅の135小節', achievement: 100.3498 },
+  { level: '12+', title: 'にっこり^^調査隊のテーマ', achievement: 100.7920 },
+  { level: '12+', title: 'おくすり飲んで寝よう', achievement: 100.5113 },
+  { level: '13', title: 'Freak Out Hr.', achievement: 100.2820 },
+  { level: '12+', title: 'New York Back Raise', achievement: 100.7131 },
+  { level: '12+', title: 'LOSTPHANTASIA', achievement: 100.6857 },
+  { level: '13', title: 'Λzure Vixen', achievement: 100.2705 },
+  { level: '13', title: 'ライアーダンサー', achievement: 100.1694 },
+  { level: '13', title: '愛包ダンスホール', achievement: 100.1919 },
+  { level: '13+', title: 'Geranium', achievement: 99.1796 }
+]
+
+export const targetStandard = [
+  { level: '13', title: 'ウミユリ海底譚', achievement: 100.6427 },
+  { level: '13', title: 'Believe the Rainbow', achievement: 100.5410 },
+  { level: '13', title: 'The wheel to the right', achievement: 100.7754 },
+  { level: '13', title: 'フォニイ', achievement: 100.5300 },
+  { level: '13', title: 'DROPS feat. Such', achievement: 100.6643 },
+  { level: '13', title: 'さよならプリンセス', achievement: 100.6809 },
+  { level: '13', title: 'ENERGY SYNERGY MATRIX', achievement: 100.7019 },
+  { level: '13', title: 'ヴィラン', achievement: 100.6652 },
+  { level: '13', title: 'スカーレット警察のゲットーパトロール24時', achievement: 100.1169 },
+  { level: '12+', title: 'Good Bye, Mr. Jack', achievement: 100.7400 },
+  { level: '12+', title: 'Sage', achievement: 100.6108 },
+  { level: '12+', title: 'あなたは世界の終わりにずんだを食べるのだ', achievement: 100.5448 },
+  { level: '13', title: 'ヒトガタ', achievement: 100.3784 },
+  { level: '13', title: '白ゆき', achievement: 100.0982 },
+  { level: '12+', title: 'FREEDOM DiVE (tpz Overcute Remix)', achievement: 100.7569 },
+  { level: '12+', title: 'エナドリおいしいソング', achievement: 100.6114 },
+  { level: '12+', title: '最強STRONGER', achievement: 100.5963 },
+  { level: '13', title: 'ARROW', achievement: 100.3328 },
+  { level: '13+', title: 'きゅうくらりん', achievement: 99.8470 },
+  { level: '13', title: 'RIFFRAIN', achievement: 100.3482 },
+  { level: '13', title: 'シックスプラン', achievement: 100.3123 },
+  { level: '12+', title: 'ツギハギスタッカート', achievement: 100.9259 },
+  { level: '12+', title: '弱虫モンブラン', achievement: 100.6607 },
+  { level: '12+', title: '幸せになれる隠しコマンドがあるらしい', achievement: 100.6562 },
+  { level: '12+', title: 'Scream out! -maimai SONIC WASHER Edit-', achievement: 100.5371 },
+  { level: '12+', title: 'My First Phone', achievement: 100.5188 },
+  { level: '12+', title: 'BLACK SWAN', achievement: 100.5107 },
+  { level: '13', title: 'ヒバナ', achievement: 100.2546 },
+  { level: '13', title: 'リモコン', achievement: 100.0962 },
+  { level: '12+', title: 'MilK', achievement: 100.7638 },
+  { level: '12+', title: '拝啓ドッペルゲンガー', achievement: 100.5960 },
+  { level: '12', title: 'Cthugha', achievement: 100.8744 },
+  { level: '12', title: 'チエルカ／エソテリカ', achievement: 100.7275 },
+  { level: '12', title: 'Rush-Hour', achievement: 100.7072 },
+  { level: '12', title: 'Last Kingdom', achievement: 100.6281 }
+]
+
+export const candidateDx = [
+  { level: '13+', title: '新人類', achievement: 99.1758 },
+  { level: '13+', title: 'バカ通信', achievement: 99.0760 },
+  { level: '13', title: 'QUATTUORUX', achievement: 100.1343 },
+  { level: '12+', title: 'ℝ∈Χ LUNATiCA', achievement: 100.1677 },
+  { level: '12+', title: 'Divide et impera!', achievement: 100.1400 },
+  { level: '13', title: 'ラヴィ', achievement: 99.9438 },
+  { level: '13', title: '勇者', achievement: 99.9145 },
+  { level: '12+', title: '匿名M', achievement: 100.4845 },
+  { level: '12+', title: 'アイディスマイル', achievement: 100.2930 },
+  { level: '13', title: '劣等上等', achievement: 99.6158 }
+]
+
+export const candidateStandard = [
+  { level: '13', title: "Love's Theme of BADASS ～バッド・アス 愛のテーマ～", achievement: 100.3601 },
+  { level: '13', title: '躯樹の墓守', achievement: 100.0822 },
+  { level: '13', title: "World's end loneliness", achievement: 100.0065 },
+  { level: '12+', title: 'VeRForTe αRtE:VEiN', achievement: 100.4223 },
+  { level: '12+', title: 'オリフィス', achievement: 100.3494 },
+  { level: '12+', title: 'Justified', achievement: 100.1138 },
+  { level: '12+', title: 'Scarlet Lance', achievement: 100.0830 },
+  { level: '13', title: 'INTERNET OVERDOSE', achievement: 99.2666 },
+  { level: '12+', title: 'SQUAD-Phvntom-', achievement: 100.2357 },
+  { level: '13', title: 'ラグトレイン', achievement: 99.6414 }
+]

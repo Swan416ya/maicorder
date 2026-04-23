@@ -94,6 +94,38 @@ const MOCK_ARCADES = [
   { id: 2, name: '机厅B（Mock）', address: '离线地址2', province: '', city: '', district: '' }
 ]
 
+/** 模拟 B50 数据（用于前端离线样式展示） */
+const MOCK_B50 = {
+  standard_total: 1234,
+  dx_total: 5678,
+  standard: [
+    {
+      id: 834,
+      song_name: '离线示例曲 A',
+      level: '14+',
+      level_index: 4,
+      achievements: 98.5,
+      fc: 'fc',
+      fs: null,
+      dx_score: 980000,
+      type: 'standard'
+    }
+  ],
+  dx: [
+    {
+      id: 999,
+      song_name: '离线示例曲 B（DX）',
+      level: '14+',
+      level_index: 4,
+      achievements: 100.0,
+      fc: 'app',
+      fs: 'fsd',
+      dx_score: 1010000,
+      type: 'dx'
+    }
+  ]
+}
+
 /** 根据请求 URL 和 method 返回 mock 数据 */
 function getMockResponse(config) {
   const url = (config.url || '').replace(/^https?:\/\/[^/]+/, '')
@@ -151,6 +183,11 @@ function getMockResponse(config) {
   }
   if (url.includes('/api/update-user') && method === 'post') {
     return { code: 200, data: config.data, message: '更新成功（离线）' }
+  }
+
+  // 落雪 B50：不走你们自己的数据库，直接 mock 用于样式展示
+  if (url.includes('/api/maimai/b50') && method === 'post') {
+    return { code: 200, data: MOCK_B50, message: 'B50 获取成功（离线）' }
   }
 
   return null
