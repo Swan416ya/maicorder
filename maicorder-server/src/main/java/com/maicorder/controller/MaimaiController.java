@@ -3,6 +3,8 @@ package com.maicorder.controller;
 import com.maicorder.entity.ApiResponse;
 import com.maicorder.entity.Best50Data;
 import com.maicorder.service.MaimaiService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,8 +15,9 @@ import reactor.core.publisher.Mono;
 
 
 @RestController
-@RequestMapping("/maimai")
+@RequestMapping({"/maimai", "/api/maimai"})
 public class MaimaiController {
+    private static final Logger log = LoggerFactory.getLogger(MaimaiController.class);
 
     @Autowired private MaimaiService maimaiService;
 
@@ -26,7 +29,8 @@ public class MaimaiController {
 
     @GetMapping("/id_b50")
     public Mono<ApiResponse<Best50Data>> idB50(@RequestParam String id) {
-    return maimaiService.IdGetBest50Data(id)
+        log.info("[MaimaiController] GET /id_b50 called, id length={}", id == null ? 0 : id.length());
+        return maimaiService.IdGetBest50Data(id)
                 .map(data -> ApiResponse.success("/maimai/id_b50", data));
     }
 

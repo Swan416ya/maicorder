@@ -42,9 +42,17 @@
               <CardList :items="targetStandard" :loading="false">
                 <template #default="{ item }">
                   <WordCard variant="filled" :title="item.title" :subTitle="item.level">
-                    <div class="score-grid">
-                      <div class="score-row">
-                        <span class="score-label">达成率</span><span class="score-value">{{ item.achievement.toFixed(4) }}%</span>
+                    <div class="song-row">
+                      <div class="song-cover-wrap">
+                        <img class="song-cover" :src="item.coverUrl" :alt="item.title" />
+                      </div>
+                      <div class="song-main">
+                        <div class="song-artist">Artist: {{ item.artist || '未知作曲者' }}</div>
+                        <div class="score-grid">
+                          <div class="score-row">
+                            <span class="score-label">达成率</span><span class="score-value">{{ item.achievement.toFixed(4) }}%</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </WordCard>
@@ -60,9 +68,17 @@
               <CardList :items="targetDx" :loading="false">
                 <template #default="{ item }">
                   <WordCard variant="filled" :title="item.title" :subTitle="item.level">
-                    <div class="score-grid">
-                      <div class="score-row">
-                        <span class="score-label">达成率</span><span class="score-value">{{ item.achievement.toFixed(4) }}%</span>
+                    <div class="song-row">
+                      <div class="song-cover-wrap">
+                        <img class="song-cover" :src="item.coverUrl" :alt="item.title" />
+                      </div>
+                      <div class="song-main">
+                        <div class="song-artist">Artist: {{ item.artist || '未知作曲者' }}</div>
+                        <div class="score-grid">
+                          <div class="score-row">
+                            <span class="score-label">达成率</span><span class="score-value">{{ item.achievement.toFixed(4) }}%</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </WordCard>
@@ -96,12 +112,55 @@ const loading = ref(false)
 const statusText = ref('尚未加载，请先填写参数并点击刷新。')
 
 const userIdInput = ref(localStorage.getItem('wmUserId') || '')
+const songMetaCache = new Map()
+
+const ASSET_BASE = 'https://assets2.lxns.net/maimai'
+const API_BASE = 'https://maimai.lxns.net/api/v0/maimai'
+
+const normalizeSongId = (rawId) => {
+  const id = Number(rawId)
+  if (!Number.isFinite(id)) return 0
+  if (id > 10000 && id < 100000) return id % 10000
+  return id
+}
+
+const buildCoverUrl = (rawId) => `${ASSET_BASE}/jacket/${normalizeSongId(rawId)}.png`
+
+const fetchSongArtist = async (rawId) => {
+  const songId = normalizeSongId(rawId)
+  if (!songId) return ''
+  if (songMetaCache.has(songId)) return songMetaCache.get(songId)
+  try {
+    const resp = await fetch(`${API_BASE}/song/${songId}`)
+    if (!resp.ok) return ''
+    const data = await resp.json()
+    const artist = data?.artist || ''
+    songMetaCache.set(songId, artist)
+    return artist
+  } catch {
+    return ''
+  }
+}
 
 const normalizeTrack = (item) => ({
-  title: item.song_name || item.songName || '未知曲目',
+  id: item.id,
+  title: item.title || item.song_name || item.songName || item.name || '未知曲目',
   level: item.level || '-',
-  achievement: Number(item.achievements || 0)
+  achievement: Number(item.achievements || 0),
+  artist: item.artist || '',
+  coverUrl: buildCoverUrl(item.id)
 })
+
+const enrichTracks = async (tracks) => {
+  const enriched = await Promise.all(
+    tracks.map(async (track) => {
+      if (track.artist) return track
+      const artist = await fetchSongArtist(track.id)
+      return { ...track, artist }
+    })
+  )
+  return enriched
+}
 
 const pickArray = (obj, keys) => {
   for (const key of keys) {
@@ -112,15 +171,18 @@ const pickArray = (obj, keys) => {
 }
 
 const extractB50 = (raw) => {
-  // 兼容常见字段：b35/b15 或 standard/dx（以及嵌套 chart/charts）
-  const b35 = pickArray(raw, ['b35', 'standard'])
-  const b15 = pickArray(raw, ['b15', 'dx'])
+  // 兼容常见字段：
+  // 1) b35/b15
+  // 2) standard/dx
+  // 3) scores_b35/scores_b15（当前后端 Best50Data）
+  const b35 = pickArray(raw, ['b35', 'standard', 'scores_b35'])
+  const b15 = pickArray(raw, ['b15', 'dx', 'scores_b15'])
   if (b35.length || b15.length) return { b35, b15 }
 
   const nested = raw?.charts || raw?.chart || {}
   return {
-    b35: pickArray(nested, ['b35', 'standard']),
-    b15: pickArray(nested, ['b15', 'dx'])
+    b35: pickArray(nested, ['b35', 'standard', 'scores_b35']),
+    b15: pickArray(nested, ['b15', 'dx', 'scores_b15'])
   }
 }
 
@@ -140,14 +202,19 @@ const refreshB50 = async () => {
       params: { id }
     })
 
-    if (resp.code !== 200 || !resp.data) {
+    // 兼容两种响应壳：
+    // 1) { code, data, message }（旧）
+    // 2) { status, data, message }（当前后端 ApiResponse）
+    const ok = resp.code === 200 || resp.status === 200
+    if (!ok || !resp.data) {
       throw new Error(resp.message || 'B50 接口返回异常')
     }
 
+    // 如果 data 内再包一层 data，也兼容展开
     const payload = resp.data?.data || resp.data
     const { b35, b15 } = extractB50(payload)
-    targetStandard.value = b35.map(normalizeTrack)
-    targetDx.value = b15.map(normalizeTrack)
+    targetStandard.value = await enrichTracks(b35.map(normalizeTrack))
+    targetDx.value = await enrichTracks(b15.map(normalizeTrack))
     statusText.value = `刷新成功：B35 ${targetStandard.value.length}，B15 ${targetDx.value.length}`
   } catch (err) {
     const msg = err?.response?.data?.message || err?.message || '刷新失败'
@@ -316,6 +383,44 @@ const goBack = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.song-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.song-cover-wrap {
+  width: 72px;
+  height: 72px;
+  border: 2px solid rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.song-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.song-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.song-artist {
+  font-size: 0.84rem;
+  color: rgba(0, 0, 0, 0.72);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .score-row {

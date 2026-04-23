@@ -4,6 +4,8 @@ import com.maicorder.dto.IdResponse;
 import com.maicorder.entity.ApiResponse;
 import com.maicorder.entity.Best50Data;
 import com.maicorder.service.MaimaiService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class MaimaiServiceImpl implements MaimaiService {
+    private static final Logger log = LoggerFactory.getLogger(MaimaiServiceImpl.class);
 
     @Value("${maimaipy-base-url}") String maimaipy_BaseUrl;
 
@@ -25,6 +28,7 @@ public class MaimaiServiceImpl implements MaimaiService {
 
     @Override
     public Mono<Best50Data> IdGetBest50Data(String ID) {
+        log.info("[MaimaiService] id_b50 start, baseUrl={}, id length={}", maimaipy_BaseUrl, ID == null ? 0 : ID.length());
         return maimaiClient.get()
                 .uri("/arcade/bests?credentials=" + ID)
                 .retrieve()
@@ -33,6 +37,10 @@ public class MaimaiServiceImpl implements MaimaiService {
                         clientResponse -> Mono.error(new RuntimeException("400/500 API 请求失败: " + clientResponse.statusCode()))
                 )
                 .bodyToMono(Best50Data.class)
+                .doOnNext(data -> log.info("[MaimaiService] id_b50 success, response type={}",
+                        data == null ? "null" : data.getClass().getSimpleName()))
+                .doOnError(e -> log.error("[MaimaiService] id_b50 failed, id length={}, error={}",
+                        ID == null ? 0 : ID.length(), e.getMessage()))
                 .onErrorMap(e -> new RuntimeException("请求失败: " + "/arcade/bests "+" credentials "+ID, e));
     }
 
