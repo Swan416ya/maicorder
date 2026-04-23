@@ -5,6 +5,23 @@
       <div class="calendar-user-info">
         <h2 class="username">{{ userName }}</h2>
       </div>
+      <div class="rating-panel">
+        <div class="rating-title">RATING / 个人信息</div>
+        <div class="rating-grid">
+          <div class="rating-item">
+            <div class="rating-label">B35</div>
+            <div class="rating-value">{{ props.ratingInfo?.b35 ?? '--' }}</div>
+          </div>
+          <div class="rating-item">
+            <div class="rating-label">B15</div>
+            <div class="rating-value">{{ props.ratingInfo?.b15 ?? '--' }}</div>
+          </div>
+          <div class="rating-item total">
+            <div class="rating-label">B50</div>
+            <div class="rating-value">{{ props.ratingInfo?.total ?? '--' }}</div>
+          </div>
+        </div>
+      </div>
       <div class="stats-row">
         <div class="stat-item">
           <div class="stat-label">TOTAL</div>
@@ -88,6 +105,14 @@ const props = defineProps({
   checkIns: {
     type: Array,
     default: () => []
+  },
+  ratingInfo: {
+    type: Object,
+    default: () => ({
+      b35: '--',
+      b15: '--',
+      total: '--'
+    })
   }
 })
 
@@ -385,7 +410,7 @@ watch(() => props.checkIns, () => {
 }
 
 .calendar-user-info {
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 
 .username {
@@ -395,6 +420,51 @@ watch(() => props.checkIns, () => {
   text-transform: uppercase;
   margin: 0;
   letter-spacing: 1px;
+}
+
+.rating-panel {
+  border: 2px solid #000;
+  background: rgba(255, 255, 255, 0.86);
+  padding: 10px;
+}
+
+.rating-title {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.rating-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rating-item {
+  border: 2px solid #000;
+  background: #fff;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.rating-item.total {
+  background: #000;
+  color: #fff;
+}
+
+.rating-label {
+  font-size: 10px;
+  font-weight: 800;
+  opacity: 0.82;
+}
+
+.rating-value {
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 /* 统计行样式 */
@@ -559,6 +629,15 @@ watch(() => props.checkIns, () => {
 
 /* 响应式调整 */
 @media (max-width: 768px) {
+  .rating-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .rating-value {
+    font-size: 17px;
+  }
+
   .stats-row {
     flex-direction: column;
     align-items: stretch;

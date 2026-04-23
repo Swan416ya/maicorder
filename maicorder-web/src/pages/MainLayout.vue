@@ -123,6 +123,7 @@ const calculateMaxDialogSize = () => {
   const windowWidth = window.innerWidth
   const windowHeight = window.innerHeight
   const longSide = Math.max(windowWidth, windowHeight)
+  const aspect = windowWidth / windowHeight
 
   // 设置圆的最大直径（屏幕长边的 75%）
   maxDialogSize.value = Math.floor(longSide * 0.75)
@@ -134,37 +135,35 @@ const calculateMaxDialogSize = () => {
 
   // 圆的直径（使用98%以确保边缘显示）
   const diameter = maxDialogSize.value * 0.98
-  
-  // 设置一个合理的内接矩形最小高度（屏幕高度的60%）
-  const minHeightRatio = 0.6
-  const targetMinHeight = windowHeight * minHeightRatio
-  
-  if (windowWidth > windowHeight) {
-    // 横屏逻辑
-    let height = windowHeight * 0.9
-    if (height > diameter) height = diameter
 
-    contentHeight.value = Math.floor(height)
-    contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
+  // 直接按视口比例估算安全矩形，避免在 1:1 视口时被几何公式压成极窄宽度
+  const isNearSquare = aspect >= 0.85 && aspect <= 1.15
+  const minWidth = windowWidth <= 768 ? 280 : 420
+  const minHeight = windowWidth <= 768 ? 260 : 320
+
+  let widthTarget
+  let heightTarget
+
+  if (isNearSquare) {
+    // 1:1 附近优先保证表单可读宽度
+    widthTarget = Math.min(windowWidth * 0.92, diameter * 0.9)
+    heightTarget = Math.min(windowHeight * 0.74, diameter * 0.82)
+  } else if (windowWidth > windowHeight) {
+    // 横屏
+    widthTarget = Math.min(windowWidth * 0.82, diameter * 0.84)
+    heightTarget = Math.min(windowHeight * 0.76, diameter * 0.78)
   } else {
-    // 竖屏逻辑（手机主要模式）
-    let height = Math.min(windowHeight * 0.8, diameter * 0.8)
-    
-    // 确保高度不小于最小高度
-    if (height < targetMinHeight && targetMinHeight <= diameter) {
-      height = targetMinHeight
-    }
-    
-    contentHeight.value = Math.floor(height)
-    contentWidth.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentHeight.value, 2)))
-    
-    // 确保宽度不会太大（不超过屏幕宽度的95%）
-    const maxWidth = windowWidth * 0.95
-    if (contentWidth.value > maxWidth) {
-      contentWidth.value = Math.floor(maxWidth)
-      contentHeight.value = Math.floor(Math.sqrt(Math.pow(diameter, 2) - Math.pow(contentWidth.value, 2)))
-    }
+    // 竖屏
+    widthTarget = Math.min(windowWidth * 0.92, diameter * 0.86)
+    heightTarget = Math.min(windowHeight * 0.7, diameter * 0.78)
   }
+
+  contentWidth.value = Math.max(Math.floor(widthTarget), minWidth)
+  contentHeight.value = Math.max(Math.floor(heightTarget), minHeight)
+
+  // 上限保护，确保不会超出可视区太多
+  contentWidth.value = Math.min(contentWidth.value, Math.floor(windowWidth * 0.95))
+  contentHeight.value = Math.min(contentHeight.value, Math.floor(windowHeight * 0.9))
 }
 
 // 窗口大小变化时重新计算

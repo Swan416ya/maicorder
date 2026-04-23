@@ -12,7 +12,7 @@
       <!-- 宽屏布局：左右分割 -->
       <div v-if="isWideScreen" class="wide-layout">
         <div class="calendar-section">
-          <CheckInCalendar :check-ins="checkIns" />
+          <CheckInCalendar :check-ins="checkIns" :rating-info="ratingInfo" />
         </div>
         <!-- 宽屏竖分割线 -->
         <div class="vertical-divider"></div>
@@ -77,7 +77,7 @@
       <!-- 窄屏布局：上下排列 -->
       <div v-else class="narrow-layout">
         <div class="calendar-top">
-          <CheckInCalendar :check-ins="checkIns" />
+          <CheckInCalendar :check-ins="checkIns" :rating-info="ratingInfo" />
         </div>
         <!-- 窄屏横分割线 -->
         <div class="horizontal-divider"></div>
@@ -156,6 +156,36 @@ const router = useRouter()
 const checkIns = ref([])
 const loading = ref(true)
 const isWideScreen = ref(false) // 是否宽屏布局（宽高比>0.9）
+const ratingInfo = ref({
+  b35: '--',
+  b15: '--',
+  total: '--'
+})
+
+const parseB50RatingFromCache = () => {
+  try {
+    const raw = localStorage.getItem('wmB50CachedPayload')
+    if (!raw) return
+    const payload = JSON.parse(raw)
+    const b35 = Number(payload?.rating_b35 ?? payload?.ratingB35)
+    const b15 = Number(payload?.rating_b15 ?? payload?.ratingB15)
+    const totalFromPayload = Number(payload?.rating)
+
+    const hasB35 = Number.isFinite(b35)
+    const hasB15 = Number.isFinite(b15)
+    const hasTotal = Number.isFinite(totalFromPayload)
+    if (!hasB35 && !hasB15 && !hasTotal) return
+
+    const total = hasTotal ? totalFromPayload : (hasB35 ? b35 : 0) + (hasB15 ? b15 : 0)
+    ratingInfo.value = {
+      b35: hasB35 ? b35 : '--',
+      b15: hasB15 ? b15 : '--',
+      total: Number.isFinite(total) ? total : '--'
+    }
+  } catch (e) {
+    console.warn('解析本地B50缓存失败', e)
+  }
+}
 
 // 检测宽高比并更新布局
 const checkLayout = () => {
@@ -174,6 +204,7 @@ const handleResize = () => {
 onMounted(() => {
   checkLayout()
   window.addEventListener('resize', handleResize)
+  parseB50RatingFromCache()
   fetchCheckIns()
 })
 
@@ -328,6 +359,7 @@ const fetchCheckIns = async () => {
   overflow: hidden;
   padding-right: 20px; /* 给分割线留出空间 */
 }
+
 
 /* 宽屏竖分割线 */
 .vertical-divider {
@@ -511,5 +543,6 @@ const fetchCheckIns = async () => {
   .scroll-container {
     padding: 0 15px 15px 15px;
   }
+
 }
 </style>
