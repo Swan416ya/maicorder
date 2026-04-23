@@ -1,4 +1,5 @@
-# Ciallo
+# 请同时运行 maimaipy app
+
 ### JWT令牌格式: Bearer eyJhbGciOiJIUzM4NCJ9.eyJ1c2VySWQiOjMsInVzZXJuYW1lIjoiY2F0IiwiaWF0IjoxNzcyNjExODQyLCJleHAiOjE3ODEyNTE4NDJ9.giuM1EjkwoBjy1Yzl_kl1DE2Yp9CGn-vjQBDsrzCbVoTBRR9nv1IE1ludOWNM_gl
 
 这是一个非常标准的**“全量更新”**流程。
