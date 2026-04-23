@@ -89,7 +89,13 @@ const routes = [
     name: 'Github',
     component: () => import('@/pages/githubPage.vue'),
     meta: { requiresAuth: false }
-  }
+  },
+  {
+    path:'/bindQR',
+    name: 'BindQR',
+    component: () => import('@/pages/bindQR.vue'),
+    meta: { requiresAuth: false }
+  },
 ]
 
 const router = createRouter({

@@ -15,7 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
-
+@Deprecated
 @RestController
 @RequestMapping("/api/maimai")
 public class MaimaiB50Controller {
