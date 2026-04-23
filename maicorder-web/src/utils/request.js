@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// 统一配置API基础路径（根据后端实际地址调整）
-export const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
+// 统一配置API基础路径：开发环境走 Vite /api 代理，生产环境同样使用相对路径
+export const API_BASE = '/api'
 
 // 创建axios实例（可选，可统一配置请求头、拦截器）
 const request = axios.create({
