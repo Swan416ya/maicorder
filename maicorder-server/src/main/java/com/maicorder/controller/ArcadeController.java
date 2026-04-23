@@ -59,4 +59,6 @@ public class ArcadeController {
         }
         return Result.success(arcade);
     }
+    
 }
+
