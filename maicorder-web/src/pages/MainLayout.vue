@@ -41,7 +41,7 @@
               <path d="M4 6h2v2H4V6zm0 5h2v2H4v-2zm0 5h2v2H4v-2zm18-10v2H8V6h14zm0 5v2H8v-2h14zm0 5v2H8v-2h14z"/>
             </svg>
           </div>
-          <span class="bottom-btn-text">查看记录</span>
+          <span class="bottom-btn-text">游玩记录</span>
         </button>
         
         <button class="bottom-btn" @click="moreTool">
@@ -53,13 +53,13 @@
           <span class="bottom-btn-text">更多工具</span>
         </button>
         
-        <button class="bottom-btn" @click="goToHomePage">
+        <button class="bottom-btn" @click="goToB50Page">
           <div class="bottom-btn-icon">
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
               <path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
             </svg>
           </div>
-          <span class="bottom-btn-text">个人主页</span>
+          <span class="bottom-btn-text">B50</span>
         </button>
         
         <button class="bottom-btn" @click="handleLogout">
@@ -212,8 +212,8 @@ const moreTool = () => {
 }
 
 // 个人主页
-const goToHomePage = () => {
-  router.push('/profile')
+const goToB50Page = () => {
+  router.push('/tool/wmB50Page')
 }
 </script>
 

@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     ...(mode !== 'offline' && {
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'http://localhost:8087',
           changeOrigin: true,
           secure: false
         }

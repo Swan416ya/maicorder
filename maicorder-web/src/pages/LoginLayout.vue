@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import logoImg from '@/assets/logo.png' 
 
-const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api'
+const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:8087/api'
 const router = useRouter()
 const emit = defineEmits(['login-success'])
 

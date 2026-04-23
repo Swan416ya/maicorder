@@ -8,7 +8,7 @@ import TestPage from '@/pages/TestPage.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/moreToolPage'
+    redirect: '/main'
   },
   {
     path: '/login',

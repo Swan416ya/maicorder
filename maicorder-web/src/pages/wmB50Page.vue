@@ -30,7 +30,7 @@
           </div>
         </section>
 
-        <section class="result-card">
+        <section class="input-card">
           <div class="split">
             <div class="column">
               <div class="column-title">B35（评分对象：最佳）</div>
