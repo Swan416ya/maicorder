@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
+import java.net.URI;
 @Service
 public class MaimaiServiceImpl implements MaimaiService {
     private static final Logger log = LoggerFactory.getLogger(MaimaiServiceImpl.class);
@@ -29,8 +29,9 @@ public class MaimaiServiceImpl implements MaimaiService {
     @Override
     public Mono<Best50Data> IdGetBest50Data(String ID) {
         log.info("[MaimaiService] id_b50 start, baseUrl={}, id length={}", maimaipy_BaseUrl, ID == null ? 0 : ID.length());
+        System.out.println("输出前的ID "+ID);
         return maimaiClient.get()
-                .uri("/arcade/bests?credentials=" + ID)
+                .uri(URI.create(maimaipy_BaseUrl + "/arcade/bests?credentials=" + ID))
                 .retrieve()
                 .onStatus(
                         status -> status.is4xxClientError() || status.is5xxServerError(),
@@ -49,7 +50,7 @@ public class MaimaiServiceImpl implements MaimaiService {
         //get arcade/identifiers?QR_Code=QR_code
         System.out.println("start get userId");
         return maimaiClient.get()
-                .uri("/arcade/identifiers?code=" + QR_code)
+                .uri(URI.create(maimaipy_BaseUrl + "/arcade/identifiers?code=" + QR_code))
                 .retrieve()
                 .onStatus(
                         status -> status.is4xxClientError() || status.is5xxServerError(),

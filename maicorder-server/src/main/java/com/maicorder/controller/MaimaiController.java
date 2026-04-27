@@ -30,6 +30,13 @@ public class MaimaiController {
     @GetMapping("/id_b50")
     public Mono<ApiResponse<Best50Data>> idB50(@RequestParam String id) {
         log.info("[MaimaiController] GET /id_b50 called, id length={}", id == null ? 0 : id.length());
+        
+        // 处理ping请求
+        if ("__ping__".equals(id)) {
+            log.info("[MaimaiController] Handling ping request");
+            return Mono.just(ApiResponse.success("/maimai/id_b50", new Best50Data()));
+        }
+        
         return maimaiService.IdGetBest50Data(id)
                 .map(data -> ApiResponse.success("/maimai/id_b50", data));
     }

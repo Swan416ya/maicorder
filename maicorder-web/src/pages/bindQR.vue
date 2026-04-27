@@ -28,7 +28,7 @@
             <p color="white">---点击复制---</p>
         </div>
 
-    <div class="btn" @click="goToB50">
+    <div v-if="IsBind" class="btn" @click="goToB50">
         前往b50页面
     </div>
 
@@ -46,18 +46,19 @@
 <script setup>
 
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import cardImage from '@/assets/rev-maicorder.png'
 const qrcode = ref('')
 const IsBind = ref(false)
 const maicorderId = ref('')
 import { BASE_URL } from '@/config/index.js'
-import router from '@/router/index.js'
+const router = useRouter()
 
 /**
  * 前往b50页面
  */
 const goToB50 = () => {
-    router.push('/tool/wmB50Page')
+    router.push("/tool/wmB50Page")
 }
 
 
@@ -111,6 +112,7 @@ const getMaicorderId = async (QR_code) => {
         }
 
     } catch (error) {
+        alert('绑定失败，请重新输入二维码')
         console.log(error)
     }
 }
@@ -121,6 +123,7 @@ const handleCardClick = () => {
         alert('请输入二维码')
         return
     }
+    alert('绑定中...')
     getMaicorderId(qrcode.value)
 }
 </script>

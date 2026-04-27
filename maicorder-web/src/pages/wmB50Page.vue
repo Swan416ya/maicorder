@@ -14,9 +14,15 @@
           <div class="hint">只展示 B35（最佳）与 B15（新曲）。</div>
           <div class="form-row">
             <input v-model.trim="userIdInput" class="input" placeholder="id（用户id）" />
-            <button class="refresh-btn" :disabled="loading" @click="refreshB50">
-              {{ loading ? '刷新中...' : '刷新' }}
-            </button>
+            <div>
+              <button class="refresh-btn" :disabled="loading" @click="refreshB50">
+                {{ loading ? '刷新中...' : '刷新' }}
+              </button>
+
+              <button class="refresh-btn" @click="goTOBind">
+                前往绑定二维码
+              </button>
+            </div>
           </div>
           <div class="status-line">{{ statusText }}</div>
           <div class="totals top-totals">
@@ -309,8 +315,17 @@ const refreshB50 = async () => {
     loading.value = false
   }
 }
+const maicorderId = ref('')
+const goTOBind = () => {
+  router.push('/bindQR')
+}
+
 
 onMounted(async () => {
+
+  maicorderId.value = localStorage.getItem('maicorderId') || ''
+  userIdInput.value = maicorderId.value
+
   const cached = readCachedPayload()
   if (cached) {
     await applyB50Payload(cached)
@@ -399,6 +414,7 @@ const goBack = () => {
   padding: 14px;
   margin-bottom: 14px;
 }
+
 .top-totals {
   margin-top: 12px;
 }
@@ -431,6 +447,9 @@ const goBack = () => {
 }
 
 .refresh-btn {
+  margin-left: 2px;
+  margin-right: 2px;
+  margin-top: 2px;
   border: 2px solid #000;
   background: #000;
   color: #fff;
@@ -647,22 +666,28 @@ const goBack = () => {
   .track-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .totals {
     grid-template-columns: 1fr;
   }
+
   .form-row {
     grid-template-columns: 1fr;
   }
+
   .refresh-btn {
     width: 100%;
   }
+
   .content {
     padding: 12px 12px 18px;
   }
+
   .input-card {
     padding: 12px;
     margin-bottom: 12px;
   }
+
   .song-cover-wrap {
     width: 62px;
     height: 62px;
