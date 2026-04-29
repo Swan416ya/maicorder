@@ -1,6 +1,6 @@
 package com.maicorder.controller;
 
-import com.maicorder.entity.ApiResponse;
+import com.maicorder.common.ApiResponse;
 import com.maicorder.entity.Best50Data;
 import com.maicorder.service.MaimaiService;
 import org.slf4j.Logger;

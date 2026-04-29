@@ -3,7 +3,9 @@ package com.maicorder.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
+@Data
 @TableName("play_record")
 public class PlayRecord {
 
@@ -28,64 +30,4 @@ public class PlayRecord {
 
     // 预留的扩展字段 (如果你以后要存 JSON)
     private String extraDataJson;
-
-    // ==========================================
-    // 下面是 Getter 和 Setter 方法
-    // ==========================================
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getGameSessionId() {
-        return gameSessionId;
-    }
-
-    public void setGameSessionId(Long gameSessionId) {
-        this.gameSessionId = gameSessionId;
-    }
-
-    public String getSongName() {
-        return songName;
-    }
-
-    public void setSongName(String songName) {
-        this.songName = songName;
-    }
-
-    public String getDifficulty() {
-        return difficulty;
-    }
-
-    public void setDifficulty(String difficulty) {
-        this.difficulty = difficulty;
-    }
-
-    public String getScore() {
-        return score;
-    }
-
-    public void setScore(String score) {
-        this.score = score;
-    }
-
-    public String getClearStatus() {
-        return clearStatus;
-    }
-
-    public void setClearStatus(String clearStatus) {
-        this.clearStatus = clearStatus;
-    }
-
-    public String getExtraDataJson() {
-        return extraDataJson;
-    }
-
-    public void setExtraDataJson(String extraDataJson) {
-        this.extraDataJson = extraDataJson;
-    }
 }

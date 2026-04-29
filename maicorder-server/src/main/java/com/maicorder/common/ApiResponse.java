@@ -1,4 +1,4 @@
-package com.maicorder.entity;
+package com.maicorder.common;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;

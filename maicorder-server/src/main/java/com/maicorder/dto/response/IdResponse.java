@@ -1,4 +1,4 @@
-package com.maicorder.dto;
+package com.maicorder.dto.response;
 
 import lombok.Data;
 

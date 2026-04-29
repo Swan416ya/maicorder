@@ -1,4 +1,4 @@
-package com.maicorder.entity;
+package com.maicorder.common;
 
 import lombok.Data;
 
