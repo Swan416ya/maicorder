@@ -1,8 +1,8 @@
-<img src="maicorder-web/src/assets/logo.png" alt="logo" width="200">
+<img src="maicorder-web/src/assets/rev-maicorder.png" alt="logo" width="200">
 
 # Maicorder | 勤了吗
 
-Maicorder 是一个面向街机音游玩家的记录平台。
+Maicorder | 勤了吗 是一个面向街机音游玩家的记录平台。
 
 ## 项目功能
 - 支持音游游玩记录的存储与管理
