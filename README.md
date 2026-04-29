@@ -1,4 +1,6 @@
-# Maicorder
+<img src="maicorder-web/src/assets/logo.png" alt="logo" width="200">
+
+# Maicorder | 勤了吗
 
 Maicorder 是一个面向街机音游玩家的记录平台。
 
@@ -10,11 +12,11 @@ Maicorder 是一个面向街机音游玩家的记录平台。
 - 支持游玩战绩绑定，统一管理个人成绩信息
 
 ## 技术架构
-后端框架：Spring Boot
-前端框架：Vue
-关系型数据库：MySQL
-缓存中间件：Redis
-部署环境：Linux + Nginx
+- 后端框架：Spring Boot
+- 前端框架：Vue3
+- 关系型数据库：MySQL
+- 缓存中间件：Redis
+- 部署环境：Linux + Nginx
 
 ## 快速部署
 1. 准备环境：安装 JDK、MySQL、Nginx、Node.js
@@ -29,7 +31,7 @@ Maicorder 是一个面向街机音游玩家的记录平台。
 
 ## 上游依赖
 - [MaimaiPy](https://github.com/maimaiPy/maimaiPy)：国服舞萌工具库
-- 落雪咖啡屋曲绘查询
+- 落雪咖啡屋曲绘查询api
 
 ## 贡献
 - 在提交pr前请保证代码可以成功运行
