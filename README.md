@@ -1,4 +1,4 @@
-<img src="maicorder-web/src/assets/rev-maicorder.png" alt="logo" width="200">
+<img src="maicorder-web/src/assets/logo-write-bg-max.png" alt="logo" width="200">
 
 # Maicorder | 勤了吗
 
